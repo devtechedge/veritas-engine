@@ -1,14 +1,14 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { VeritasState } from "./state";
 
-// Initialize LLM conditionally for resilience on Vercel Edge/Serverless environments
+// Initialize Gemini LLM conditionally for resilience on Vercel Edge/Serverless environments
 const getLLM = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) return null;
-  return new ChatOpenAI({
-    openAIApiKey: apiKey,
-    modelName: "gpt-4o-mini",
+  return new ChatGoogleGenerativeAI({
+    apiKey: apiKey,
+    model: "gemini-1.5-flash",
     temperature: 0.2,
   });
 };
