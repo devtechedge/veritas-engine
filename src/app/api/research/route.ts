@@ -45,7 +45,8 @@ export async function POST(req: NextRequest) {
 
         for await (const update of eventStream) {
           const nodeName = Object.keys(update)[0];
-          const nodeOutput = update[nodeName];
+          // Assert update to a Record to allow dynamic string indexing on LangGraph output
+          const nodeOutput = (update as Record<string, any>)[nodeName];
 
           sendUpdate("node_complete", {
             node: nodeName,
