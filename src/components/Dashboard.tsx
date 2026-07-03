@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { 
   Play, RotateCw, Terminal, CheckCircle2, FileText, 
   Layers, Sliders, ShieldAlert, BookOpen, ExternalLink, Activity,
-  Copy, Download, Award, Database
+  Copy, Download
 } from "lucide-react";
 
 interface LogEntry {
@@ -290,9 +290,9 @@ export default function Dashboard() {
       return "border-emerald-500 bg-emerald-950/10 shadow-[0_0_15px_rgba(16,185,129,0.15)] animate-pulse text-white";
     }
     if (isCompleted) {
-      return "border-emerald-500/80 bg-slate-900/40 text-emerald-400";
+      return "border-emerald-500/80 bg-slate-900/40 text-emerald-400 animate-fade-in";
     }
-    return "border-slate-800/80 bg-slate-950/40 text-slate-500 select-none";
+    return "border-slate-800/85 bg-slate-950/40 text-slate-500 select-none";
   };
 
   // Radial progress ring score metrics
@@ -337,7 +337,7 @@ export default function Dashboard() {
         <section className="xl:col-span-5 flex flex-col space-y-6">
           
           {/* Query Inputs Panel */}
-          <div className="backdrop-blur-md bg-slate-950/80 border border-slate-800/50 shadow-2xl rounded-xl p-5 space-y-4">
+          <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-5">
             <h2 className="text-xs font-bold tracking-widest uppercase text-slate-400 flex items-center gap-2 font-mono">
               <Sliders className="h-4 w-4 text-emerald-400" /> Orchestration Panel
             </h2>
@@ -395,7 +395,7 @@ export default function Dashboard() {
           </div>
 
           {/* Connected Graph Topology */}
-          <div className="backdrop-blur-md bg-slate-950/80 border border-slate-800/50 shadow-2xl rounded-xl p-5 flex-1 flex flex-col justify-between">
+          <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex-1 flex flex-col justify-between">
             <div>
               <h2 className="text-xs font-bold tracking-widest uppercase text-slate-400 flex items-center gap-2 mb-6 font-mono">
                 <Activity className="h-4 w-4 text-emerald-400" /> Graph Visualizer
@@ -499,10 +499,10 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive Knowledge Dashboard Panel */}
-          <div className="backdrop-blur-md bg-slate-950/80 border border-slate-800/50 shadow-2xl rounded-xl flex-1 flex flex-col overflow-hidden min-h-[450px]">
+          <div className="backdrop-blur-md bg-slate-900/30 border border-slate-800/80 backdrop-blur-sm rounded-2xl flex-1 flex flex-col overflow-hidden min-h-[450px]">
             
             {/* Sliding Tab Header */}
-            <div className="flex p-1 bg-slate-950 border border-slate-800/60 rounded-lg max-w-sm mt-4 ml-4 select-none">
+            <div className="flex p-1 bg-slate-950 border border-slate-850 rounded-lg max-w-sm mt-4 ml-4 select-none">
               <button
                 onClick={() => setActiveTab("brief")}
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
