@@ -10,7 +10,7 @@ const getLLM = () => {
     apiKey: apiKey,
     model: "gemini-1.5-flash",
     temperature: 0.2,
-    convertSystemMessageToHuman: true, // Crucial for Gemini system instruction support
+    convertSystemMessageToHumanContent: true, // Correct LangChain property to merge system messages for Gemini
   });
 };
 
