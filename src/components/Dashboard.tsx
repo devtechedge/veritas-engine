@@ -3,8 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { 
   Play, RotateCw, Terminal, CheckCircle2, FileText, 
-  Layers, Sliders, ShieldAlert, BookOpen, ExternalLink, Activity,
-  Copy, Download
+  Layers, Sliders, ShieldAlert, BookOpen, ExternalLink, Activity
 } from "lucide-react";
 
 interface LogEntry {
@@ -118,7 +117,7 @@ function renderMarkdown(md: string): React.ReactNode {
                   {rows.map((row, rowIdx) => (
                     <tr key={rowIdx} className="hover:bg-slate-800/10 transition">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400">{inlineParse(cell)}</td>
+                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400 font-mono text-[11px]">{inlineParse(cell)}</td>
                       ))}
                     </tr>
                   ))}
@@ -132,7 +131,7 @@ function renderMarkdown(md: string): React.ReactNode {
       // 7. Regular Paragraph
       const paragraphLines = trimmed.split("\n").map(l => l.trim()).filter(Boolean);
       return (
-        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-300">
+        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-400">
           {paragraphLines.map((line, idx) => (
             <React.Fragment key={idx}>
               {inlineParse(line)}
@@ -615,7 +614,7 @@ export default function Dashboard() {
                     {/* Commentary Layout */}
                     <div className="md:col-span-8 flex flex-col gap-3">
                       <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
-                        <Award className="h-4 w-4 text-emerald-400" />
+                        <ShieldAlert className="h-4 w-4 text-emerald-400" />
                         <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Auditor Notes & Gap Rectifications</span>
                       </div>
                       <div className="flex-1 text-xs text-slate-300 leading-relaxed font-mono max-h-[300px] overflow-y-auto pr-2 custom-scrollbar bg-slate-950/20 p-3 rounded-lg border border-slate-900">
@@ -636,7 +635,7 @@ export default function Dashboard() {
                 document ? (
                   <div className="flex-1 flex flex-col gap-4">
                     <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
-                      <Database className="h-4 w-4 text-emerald-400" />
+                      <BookOpen className="h-4 w-4 text-emerald-400" />
                       <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Fact-checked mapping data index metrics</span>
                     </div>
                     <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar font-mono">
