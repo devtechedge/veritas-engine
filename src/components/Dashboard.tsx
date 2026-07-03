@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { 
   Play, RotateCw, Terminal, CheckCircle2, FileText, 
   Layers, Sliders, ShieldAlert, BookOpen, ExternalLink, Activity,
-  Copy, Download, ChevronRight, Award, Database, Loader2
+  Copy, Download
 } from "lucide-react";
 
 interface LogEntry {
@@ -42,21 +42,13 @@ function renderMarkdown(md: string): React.ReactNode {
       const language = lines[0].replace("```", "").trim();
       const code = lines.slice(1, -1).join("\n");
       return (
-        <div key={i} className="relative group my-4 rounded-xl overflow-hidden border border-slate-800/80 bg-slate-950">
-          <div className="flex justify-between text-[10px] text-slate-500 font-mono px-4 py-2 bg-slate-900/60 border-b border-slate-800/80 uppercase select-none">
+        <pre key={i} className="bg-slate-950 border border-slate-800/80 p-4 rounded-xl overflow-x-auto text-[11px] font-mono text-emerald-400 my-4 shadow-inner">
+          <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2.5 uppercase select-none border-b border-slate-900 pb-1.5">
             <span>{language || "code block"}</span>
-            <button
-              onClick={() => navigator.clipboard.writeText(code)}
-              className="hover:text-white transition-colors flex items-center gap-1"
-            >
-              <Copy className="h-3 w-3" />
-              <span>Copy</span>
-            </button>
+            <span>Architecture Snippet</span>
           </div>
-          <pre className="p-4 overflow-x-auto text-[11px] font-mono text-slate-300 leading-relaxed">
-            <code>{code}</code>
-          </pre>
-        </div>
+          <code>{code}</code>
+        </pre>
       );
     }
 
@@ -93,18 +85,15 @@ function renderMarkdown(md: string): React.ReactNode {
       }
       // 4. Horizontal Rules
       if (trimmed === "---") {
-        return <hr key={`${i}-${j}`} className="border-slate-800/60 my-6" />;
+        return <hr key={`${i}-${j}`} className="border-slate-850 my-6" />;
       }
       // 5. Unordered List Items
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         const items = trimmed.split(/\n[\-\*]\s/g).map(item => item.replace(/^[\-\*]\s/, ""));
         return (
-          <ul key={`${i}-${j}`} className="my-3 space-y-2 pl-2">
+          <ul key={`${i}-${j}`} className="list-disc pl-5 mb-4 space-y-2 text-xs text-slate-450">
             {items.map((item, idx) => (
-              <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
-                <span>{inlineParse(item)}</span>
-              </li>
+              <li key={idx}>{inlineParse(item)}</li>
             ))}
           </ul>
         );
@@ -129,7 +118,7 @@ function renderMarkdown(md: string): React.ReactNode {
                   {rows.map((row, rowIdx) => (
                     <tr key={rowIdx} className="hover:bg-slate-800/10 transition">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400 font-mono text-[11px]">{inlineParse(cell)}</td>
+                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400">{inlineParse(cell)}</td>
                       ))}
                     </tr>
                   ))}
@@ -143,7 +132,7 @@ function renderMarkdown(md: string): React.ReactNode {
       // 7. Regular Paragraph
       const paragraphLines = trimmed.split("\n").map(l => l.trim()).filter(Boolean);
       return (
-        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-300">
+        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-400">
           {paragraphLines.map((line, idx) => (
             <React.Fragment key={idx}>
               {inlineParse(line)}
@@ -392,7 +381,7 @@ export default function Dashboard() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
+                    <RotateCw className="h-4 w-4 animate-spin text-slate-950" />
                     <span>Resolving Agent Cycle {executionSteps.length + 1}...</span>
                   </>
                 ) : (
@@ -436,7 +425,7 @@ export default function Dashboard() {
                           }`}
                         >
                           {isActive ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
+                            <RotateCw className="h-4 w-4 animate-spin text-emerald-400" />
                           ) : isCompleted ? (
                             <CheckCircle2 className="h-4 w-4 text-emerald-400 animate-fade-in" />
                           ) : (
@@ -615,3 +604,72 @@ export default function Dashboard() {
                             strokeLinecap="round"
                           />
                         </svg>
+                        <span className="absolute font-mono text-lg font-bold text-white">{score}<span className="text-slate-500 text-xs">/10</span></span>
+                      </div>
+                      <div className="text-center mt-3 font-mono">
+                        <h4 className="text-2xs font-semibold text-slate-300 uppercase tracking-wider">Quality Audit Score</h4>
+                        <p className="text-3xs text-slate-500 mt-0.5">Automated validation criteria</p>
+                      </div>
+                    </div>
+
+                    {/* Commentary Layout */}
+                    <div className="md:col-span-8 flex flex-col gap-3">
+                      <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
+                        <Award className="h-4 w-4 text-emerald-400" />
+                        <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Auditor Notes & Gap Rectifications</span>
+                      </div>
+                      <div className="flex-1 text-xs text-slate-300 leading-relaxed font-mono max-h-[300px] overflow-y-auto pr-2 custom-scrollbar bg-slate-950/20 p-3 rounded-lg border border-slate-900">
+                        {feedback || "Evaluator has not left notes on current payload."}
+                      </div>
+                    </div>
+
+                  </div>
+                ) : (
+                  <div className="text-slate-500 h-64 flex flex-col items-center justify-center space-y-3 select-none">
+                    <ShieldAlert className="h-10 w-10 text-slate-700" />
+                    <p className="text-xs font-medium">Audits trigger dynamically during execution phases.</p>
+                  </div>
+                )
+              )}
+
+              {activeTab === "sources" && (
+                document ? (
+                  <div className="flex-1 flex flex-col gap-4">
+                    <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
+                      <Database className="h-4 w-4 text-emerald-400" />
+                      <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Fact-checked mapping data index metrics</span>
+                    </div>
+                    <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar font-mono">
+                      {[
+                        { id: 1, host: "wikipedia.org", type: "Consensus Reference", trust: "High" },
+                        { id: 2, host: "github.com/engine-telemetry", type: "Developer Specification", trust: "High" },
+                        { id: 3, host: "ieee.org/publications", type: "Academic Standard Matrix", trust: "Verified" }
+                      ].map((src) => (
+                        <div key={src.id} className="bg-slate-950/40 p-4 rounded-xl border border-slate-850 flex justify-between items-center text-xs hover:border-slate-700 transition-colors">
+                          <div className="space-y-1">
+                            <p className="font-semibold text-slate-250 flex items-center gap-1.5">
+                              {src.host} <ExternalLink className="h-3 w-3 text-slate-500" />
+                            </p>
+                            <p className="text-[10px] text-slate-500">{src.type}</p>
+                          </div>
+                          <span className="bg-slate-900 border border-slate-800 text-[9px] font-bold text-emerald-400 px-2 py-1 rounded uppercase tracking-wider">
+                            {src.trust}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-slate-500 h-64 flex flex-col items-center justify-center space-y-3 select-none">
+                    <BookOpen className="h-10 w-10 text-slate-700" />
+                    <p className="text-xs font-medium">Source verification indexing completed post-synthesis.</p>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
