@@ -64,9 +64,9 @@ export async function plannerNode(state: typeof VeritasState.State) {
       const cleaned = response.content.toString().replace(/```json|```/g, "").trim();
       plan = JSON.parse(cleaned);
       logMsg = `Planner: Generated execution strategy containing ${plan.length} objectives.`;
-    } catch {
+    } catch (error: any) {
       plan = [`${query} key metrics`, `${query} architecture`, `${query} implementation strategies`];
-      logMsg = `Planner (Fallback): Generated query execution tasks due to API exception.`;
+      logMsg = `Planner (Fallback): Generated query execution tasks due to API exception: ${error.message || error.toString()}`;
     }
   } else {
     // Interactive demo pathway
@@ -134,10 +134,10 @@ export async function criticNode(state: typeof VeritasState.State) {
       score = parsed.score;
       feedback = parsed.feedback;
       logMsg = `Critic Audit (Iteration ${currentIteration}): Score: ${score}/10. Review Completed.`;
-    } catch {
+    } catch (error: any) {
       score = currentIteration >= 1 ? 9 : 5;
       feedback = "Fallback critique evaluation triggered. Verified source reliability.";
-      logMsg = `Critic Audit (Fallback): Automated evaluation complete.`;
+      logMsg = `Critic Audit (Fallback): Automated evaluation complete. Error: ${error.message || error.toString()}`;
     }
   } else {
     // Simulate progression to show self-correction loop visually
@@ -167,7 +167,7 @@ export async function synthesizerNode(state: typeof VeritasState.State) {
   const data = state.searchResults;
   
   let output = "";
-  const logMsg = "Synthesizer: Transforming verified sources into semantic Markdown document.";
+  let logMsg = "Synthesizer: Transforming verified sources into semantic Markdown document.";
 
   if (llm) {
     const systemPrompt = `You are a Principal Technical Writer. Synthesize the provided multi-agent research into a master-level technical brief using rich Markdown structure, headers, raw metrics tables, and dynamic code paradigms if applicable. Ground your writing purely in the facts collected.`;
@@ -179,8 +179,9 @@ export async function synthesizerNode(state: typeof VeritasState.State) {
         new HumanMessage(userPrompt),
       ]);
       output = response.content.toString();
-    } catch {
-      output = `### System Architecture Review: ${query}\n\n*Failed to generate live model document response.*`;
+    } catch (error: any) {
+      output = `### System Architecture Review: ${query}\n\n*Failed to generate live model document response.*\n\n**API Error Details:** \`${error.message || error.toString()}\``;
+      logMsg = `Synthesizer (Fallback): Generation failed due to API exception: ${error.message || error.toString()}`;
     }
   } else {
     // Corrected double newline markdown layout mapping
