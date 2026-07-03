@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { 
   Play, RotateCw, Terminal, CheckCircle2, FileText, 
   Layers, Sliders, ShieldAlert, BookOpen, ExternalLink, Activity,
-  Copy, Download
+  Copy, Download, Award, Database
 } from "lucide-react";
 
 interface LogEntry {
@@ -118,7 +118,7 @@ function renderMarkdown(md: string): React.ReactNode {
                   {rows.map((row, rowIdx) => (
                     <tr key={rowIdx} className="hover:bg-slate-800/10 transition">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400 font-mono text-[11px]">{inlineParse(cell)}</td>
+                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400">{inlineParse(cell)}</td>
                       ))}
                     </tr>
                   ))}
@@ -132,7 +132,7 @@ function renderMarkdown(md: string): React.ReactNode {
       // 7. Regular Paragraph
       const paragraphLines = trimmed.split("\n").map(l => l.trim()).filter(Boolean);
       return (
-        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-400">
+        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-300">
           {paragraphLines.map((line, idx) => (
             <React.Fragment key={idx}>
               {inlineParse(line)}
@@ -262,7 +262,7 @@ export default function Dashboard() {
     if (!document) return;
     const blob = new Blob([document], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
-    const a = window.document.createElement("a"); // Resolved local scope clash using global window selector
+    const a = window.document.createElement("a");
     a.href = url;
     a.download = `veritas_report_${query.replace(/\s+/g, "_").toLowerCase() || "brief"}.md`;
     a.click();
