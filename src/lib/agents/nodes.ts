@@ -8,7 +8,7 @@ const getLLM = () => {
   if (!apiKey) return null;
   return new ChatGoogleGenerativeAI({
     apiKey: apiKey,
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash", // Updated to the active stable Gemini 2.5 Flash model
     temperature: 0.2,
     convertSystemMessageToHumanContent: true, // Correct LangChain property to merge system messages for Gemini
   });
