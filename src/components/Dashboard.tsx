@@ -91,7 +91,7 @@ function renderMarkdown(md: string): React.ReactNode {
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         const items = trimmed.split(/\n[\-\*]\s/g).map(item => item.replace(/^[\-\*]\s/, ""));
         return (
-          <ul key={`${i}-${j}`} className="list-disc pl-5 mb-4 space-y-2 text-xs text-slate-450">
+          <ul key={`${i}-${j}`} className="list-disc pl-5 mb-4 space-y-2 text-xs text-slate-400">
             {items.map((item, idx) => (
               <li key={idx}>{inlineParse(item)}</li>
             ))}
@@ -118,7 +118,7 @@ function renderMarkdown(md: string): React.ReactNode {
                   {rows.map((row, rowIdx) => (
                     <tr key={rowIdx} className="hover:bg-slate-800/10 transition">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400">{inlineParse(cell)}</td>
+                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400 font-mono text-[11px]">{inlineParse(cell)}</td>
                       ))}
                     </tr>
                   ))}
@@ -262,7 +262,7 @@ export default function Dashboard() {
     if (!document) return;
     const blob = new Blob([document], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = window.document.createElement("a"); // Resolved local scope clash using global window selector
     a.href = url;
     a.download = `veritas_report_${query.replace(/\s+/g, "_").toLowerCase() || "brief"}.md`;
     a.click();
