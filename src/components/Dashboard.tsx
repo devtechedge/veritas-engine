@@ -117,7 +117,7 @@ function renderMarkdown(md: string): React.ReactNode {
                   {rows.map((row, rowIdx) => (
                     <tr key={rowIdx} className="hover:bg-slate-800/10 transition">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400 font-mono text-[11px]">{inlineParse(cell)}</td>
+                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400">{inlineParse(cell)}</td>
                       ))}
                     </tr>
                   ))}
@@ -420,7 +420,7 @@ export default function Dashboard() {
                               ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
                               : isCompleted
                               ? "bg-slate-900 border-slate-800 text-slate-400"
-                              : "bg-slate-950 border-slate-900 text-slate-600"
+                              : "bg-slate-950 border-slate-900 text-slate-650"
                           }`}
                         >
                           {isActive ? (
@@ -553,14 +553,14 @@ export default function Dashboard() {
                           onClick={copyBriefToClipboard}
                           className="px-2.5 py-1 text-3xs border border-slate-800 bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-white rounded flex items-center gap-1.5 transition-all"
                         >
-                          <Copy className="h-3 w-3" />
+                          <FileText className="h-3 w-3" />
                           <span>Copy Brief</span>
                         </button>
                         <button
                           onClick={exportAsMarkdown}
                           className="px-2.5 py-1 text-3xs border border-emerald-800/40 bg-emerald-950/10 hover:bg-emerald-950/30 text-emerald-400 hover:text-emerald-300 rounded flex items-center gap-1.5 transition-all"
                         >
-                          <Download className="h-3 w-3" />
+                          <ExternalLink className="h-3 w-3" />
                           <span>Export .md</span>
                         </button>
                       </div>
