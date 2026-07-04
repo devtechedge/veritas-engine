@@ -15,21 +15,32 @@ interface LogEntry {
 // ==========================================
 // HIGH-FIDELITY CUSTOM MARKDOWN PARSER
 // ==========================================
-function inlineParse(text: string): React.ReactNode {
+function inlineParse(text: string, isDarkMode: boolean): React.ReactNode {
   if (!text) return "";
   const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
   return parts.map((part, index) => {
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+      return <strong key={index} className={`font-bold ${isDarkMode ? "text-white" : "text-slate-900"}`}>{part.slice(2, -2)}</strong>;
     }
     if (part.startsWith("`") && part.endsWith("`")) {
-      return <code key={index} className="bg-slate-950 text-emerald-400 px-1.5 py-0.5 rounded border border-slate-800/80 text-[10px] font-mono">{part.slice(1, -1)}</code>;
+      return (
+        <code 
+          key={index} 
+          className={`px-1.5 py-0.5 rounded border text-[10px] font-mono ${
+            isDarkMode 
+              ? "bg-slate-950 text-emerald-400 border-slate-800/80" 
+              : "bg-slate-100 text-emerald-600 border-slate-200"
+          }`}
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
     }
     return part;
   });
 }
 
-function renderMarkdown(md: string): React.ReactNode {
+function renderMarkdown(md: string, isDarkMode: boolean): React.ReactNode {
   if (!md) return null;
 
   // Extract and group code blocks together to prevent malformation
@@ -41,8 +52,8 @@ function renderMarkdown(md: string): React.ReactNode {
       const language = lines[0].replace("```", "").trim();
       const code = lines.slice(1, -1).join("\n");
       return (
-        <pre key={i} className="bg-slate-950 border border-slate-800/80 p-4 rounded-xl overflow-x-auto text-[11px] font-mono text-emerald-400 my-4 shadow-inner">
-          <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2.5 uppercase select-none border-b border-slate-900 pb-1.5">
+        <pre key={i} className={`border p-4 rounded-xl overflow-x-auto text-[11px] font-mono my-4 shadow-inner ${isDarkMode ? "bg-slate-950 border-slate-800/80 text-emerald-400" : "bg-slate-900 border-slate-950 text-emerald-300"}`}>
+          <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2.5 uppercase select-none border-b border-slate-900/60 pb-1.5">
             <span>{language || "code block"}</span>
             <span>Architecture Snippet</span>
           </div>
@@ -61,38 +72,41 @@ function renderMarkdown(md: string): React.ReactNode {
       // 1. Heading 1
       if (trimmed.startsWith("# ")) {
         return (
-          <h1 key={`${i}-${j}`} className="text-xl font-extrabold text-white mb-4 mt-6 border-b border-slate-800 pb-2 tracking-tight">
-            {inlineParse(trimmed.substring(2))}
+          <h1 key={`${i}-${j}`} className={`text-xl font-extrabold mb-4 mt-6 border-b pb-2 tracking-tight ${isDarkMode ? "text-white border-slate-800" : "text-slate-900 border-slate-200"}`}>
+            {inlineParse(trimmed.substring(2), isDarkMode)}
           </h1>
         );
       }
       // 2. Heading 2
       if (trimmed.startsWith("## ")) {
         return (
-          <h2 key={`${i}-${j}`} className="text-sm font-bold text-emerald-400 mb-3 mt-5 tracking-wider uppercase">
-            {inlineParse(trimmed.substring(3))}
+          <h2 key={`${i}-${j}`} className={`text-sm font-bold mb-3 mt-5 tracking-wider uppercase ${isDarkMode ? "text-emerald-400" : "text-emerald-600"}`}>
+            {inlineParse(trimmed.substring(3), isDarkMode)}
           </h2>
         );
       }
       // 3. Heading 3
       if (trimmed.startsWith("### ")) {
         return (
-          <h3 key={`${i}-${j}`} className="text-xs font-semibold text-slate-200 mb-2 mt-4">
-            {inlineParse(trimmed.substring(4))}
+          <h3 key={`${i}-${j}`} className={`text-xs font-semibold mb-2 mt-4 ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}>
+            {inlineParse(trimmed.substring(4), isDarkMode)}
           </h3>
         );
       }
       // 4. Horizontal Rules
       if (trimmed === "---") {
-        return <hr key={`${i}-${j}`} className="border-slate-850 my-6" />;
+        return <hr key={`${i}-${j}`} className={`my-6 ${isDarkMode ? "border-slate-850" : "border-slate-200"}`} />;
       }
       // 5. Unordered List Items
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         const items = trimmed.split(/\n[\-\*]\s/g).map(item => item.replace(/^[\-\*]\s/, ""));
         return (
-          <ul key={`${i}-${j}`} className="list-disc pl-5 mb-4 space-y-2 text-xs text-slate-400">
+          <ul key={`${i}-${j}`} className="my-3 space-y-2 pl-2">
             {items.map((item, idx) => (
-              <li key={idx}>{inlineParse(item)}</li>
+              <li key={idx} className={`flex items-start gap-2.5 text-xs leading-relaxed ${isDarkMode ? "text-slate-300" : "text-slate-650"}`}>
+                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
+                <span>{inlineParse(item, isDarkMode)}</span>
+              </li>
             ))}
           </ul>
         );
@@ -104,20 +118,20 @@ function renderMarkdown(md: string): React.ReactNode {
           const headers = lines[0].split("|").map(h => h.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
           const rows = lines.slice(2).map(row => row.split("|").map(cell => cell.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1));
           return (
-            <div key={`${i}-${j}`} className="overflow-x-auto my-4 rounded-xl border border-slate-800/80 shadow-md">
-              <table className="w-full text-left border-collapse bg-slate-950/20">
+            <div key={`${i}-${j}`} className={`overflow-x-auto my-4 rounded-xl border shadow-sm ${isDarkMode ? "border-slate-800/80 bg-slate-950/20" : "border-slate-200/80 bg-slate-50/40"}`}>
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-900/60 border-b border-slate-800">
+                  <tr className={`border-b ${isDarkMode ? "bg-slate-900/60 border-slate-800" : "bg-slate-100 border-slate-200"}`}>
                     {headers.map((h, idx) => (
-                      <th key={idx} className="px-4 py-3 text-[10px] font-bold tracking-wider uppercase text-slate-300">{inlineParse(h)}</th>
+                      <th key={idx} className={`px-4 py-3 text-[10px] font-bold tracking-wider uppercase ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}>{inlineParse(h, isDarkMode)}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className={`divide-y ${isDarkMode ? "divide-slate-850" : "divide-slate-200"}`}>
                   {rows.map((row, rowIdx) => (
-                    <tr key={rowIdx} className="hover:bg-slate-800/10 transition">
+                    <tr key={rowIdx} className={`transition ${isDarkMode ? "hover:bg-slate-800/10" : "hover:bg-slate-100/40"}`}>
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400 font-mono text-[11px]">{inlineParse(cell)}</td>
+                        <td key={cellIdx} className={`px-4 py-3 text-xs font-mono text-[11px] ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>{inlineParse(cell, isDarkMode)}</td>
                       ))}
                     </tr>
                   ))}
@@ -131,10 +145,10 @@ function renderMarkdown(md: string): React.ReactNode {
       // 7. Regular Paragraph
       const paragraphLines = trimmed.split("\n").map(l => l.trim()).filter(Boolean);
       return (
-        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-300">
+        <p key={`${i}-${j}`} className={`mb-4 leading-relaxed text-xs ${isDarkMode ? "text-slate-300" : "text-slate-650"}`}>
           {paragraphLines.map((line, idx) => (
             <React.Fragment key={idx}>
-              {inlineParse(line)}
+              {inlineParse(line, isDarkMode)}
               {idx < paragraphLines.length - 1 && " "}
             </React.Fragment>
           ))}
@@ -148,6 +162,7 @@ function renderMarkdown(md: string): React.ReactNode {
 // CORE DASHBOARD COMPONENT
 // ==========================================
 export default function Dashboard() {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false); // Loads in light mode as default
   const [query, setQuery] = useState("");
   const [maxIterations, setMaxIterations] = useState(2);
   const [loading, setLoading] = useState(false);
@@ -271,13 +286,13 @@ export default function Dashboard() {
   // Dynamic console color mappings
   const getLogStyle = (node: string, msg: string) => {
     const lowerMsg = msg.toLowerCase();
-    if (node === "system") return "text-slate-500 font-medium";
+    if (node === "system") return isDarkMode ? "text-slate-500 font-medium" : "text-slate-400 font-medium";
     if (node === "error" || lowerMsg.includes("failed") || lowerMsg.includes("exception")) return "text-rose-400 font-semibold";
     if (lowerMsg.startsWith("planner")) return "text-cyan-400";
     if (lowerMsg.startsWith("searcher")) return "text-purple-400";
     if (lowerMsg.startsWith("critic")) return "text-emerald-400";
     if (lowerMsg.startsWith("synthesizer")) return "text-amber-400";
-    return "text-slate-300";
+    return isDarkMode ? "text-slate-300" : "text-slate-100";
   };
 
   // Graph state mappings
@@ -291,7 +306,7 @@ export default function Dashboard() {
     if (isCompleted) {
       return "border-emerald-500/80 bg-slate-900/40 text-emerald-400 animate-fade-in";
     }
-    return "border-slate-800/85 bg-slate-950/40 text-slate-500 select-none";
+    return isDarkMode ? "border-slate-800/85 bg-slate-950/40 text-slate-500 select-none" : "border-slate-200 bg-white/40 text-slate-400 select-none";
   };
 
   // Radial progress ring score metrics
@@ -300,20 +315,20 @@ export default function Dashboard() {
   const strokeDashoffset = score !== null ? circumference - (circumference * score) / 10 : circumference;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className={`min-h-screen flex flex-col font-sans transition-all duration-350 selection:bg-emerald-500/20 selection:text-emerald-400 ${isDarkMode ? "bg-slate-950 text-slate-100" : "bg-[#f8fafc] text-slate-800"}`}>
       
       {/* SaaS Glassmorphic Header Bar */}
-      <header className="border-b border-slate-900/60 bg-slate-950/80 backdrop-blur-md px-8 py-4 flex items-center justify-between sticky top-0 z-50">
+      <header className={`border-b px-8 py-4 flex items-center justify-between sticky top-0 z-50 transition-colors duration-350 backdrop-blur-md ${isDarkMode ? "border-slate-900/60 bg-slate-950/80" : "border-slate-200/80 bg-white/90 shadow-sm"}`}>
         <div className="flex items-center space-x-4">
-          <div className="h-9 w-9 bg-emerald-500/10 rounded-lg flex items-center justify-center border border-emerald-500/30">
-            <Activity className="h-5 w-5 text-emerald-400" />
+          <div className={`h-9 w-9 rounded-lg flex items-center justify-center border ${isDarkMode ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-500/5 border-emerald-500/20"}`}>
+            <Activity className="h-5 w-5 text-emerald-500" />
           </div>
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="text-md font-semibold tracking-wider font-mono text-white">
+              <span className={`text-md font-semibold tracking-wider font-mono ${isDarkMode ? "text-white" : "text-slate-900"}`}>
                 VERITAS ENGINE
               </span>
-              <span className="text-[10px] font-bold tracking-widest text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 bg-emerald-500/5 uppercase">
+              <span className={`text-[10px] font-bold tracking-widest px-2 py-0.5 rounded border uppercase select-none ${isDarkMode ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/5" : "text-emerald-600 border-emerald-500/10 bg-emerald-500/5"}`}>
                 v1.1 Active
               </span>
             </div>
@@ -322,7 +337,19 @@ export default function Dashboard() {
         </div>
         
         <div className="hidden sm:flex items-center space-x-3 text-xs select-none">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 gap-1.5">
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-1.5 rounded-lg border transition-all duration-300 mr-2 flex items-center justify-center ${isDarkMode ? "bg-slate-900 border-slate-850 text-slate-400 hover:text-white" : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm"}`}
+            aria-label="Toggle theme"
+          >
+            {isDarkMode ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            )}
+          </button>
+          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-slate-400 border gap-1.5 ${isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm"}`}>
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Vercel Serverless Runtime
           </span>
@@ -336,9 +363,9 @@ export default function Dashboard() {
         <section className="xl:col-span-5 flex flex-col space-y-6">
           
           {/* Query Inputs Panel */}
-          <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-5">
-            <h2 className="text-xs font-bold tracking-widest uppercase text-slate-400 flex items-center gap-2 font-mono">
-              <Sliders className="h-4 w-4 text-emerald-400" /> Orchestration Panel
+          <div className={`border shadow-2xl rounded-xl p-5 space-y-4 transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`}>
+            <h2 className={`text-xs font-bold tracking-widest uppercase flex items-center gap-2 font-mono ${isDarkMode ? "text-slate-400" : "text-slate-550"}`}>
+              <Sliders className="h-4 w-4 text-emerald-500" /> Orchestration Panel
             </h2>
             <form onSubmit={triggerSearch} className="space-y-4">
               <div className="space-y-2">
@@ -350,7 +377,7 @@ export default function Dashboard() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     disabled={loading}
-                    className="w-full bg-slate-950/80 border border-slate-800/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 rounded-lg px-4 py-3 text-xs text-slate-200 placeholder-slate-600 outline-none transition duration-200 font-mono"
+                    className={`w-full border focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 rounded-lg px-4 py-3 text-xs outline-none transition duration-200 font-mono ${isDarkMode ? "bg-slate-950/80 border-slate-800/80 text-slate-200 placeholder-slate-650" : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white"}`}
                   />
                 </div>
               </div>
@@ -358,7 +385,7 @@ export default function Dashboard() {
               <div className="space-y-2 select-none">
                 <div className="flex justify-between text-2xs font-mono text-slate-500">
                   <span>Self-Correction Iteration Depth</span>
-                  <span className="text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                  <span className={`font-mono px-1.5 py-0.5 rounded border ${isDarkMode ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-emerald-600 bg-emerald-50/50 border-emerald-500/15"}`}>
                     {maxIterations} Iterations
                   </span>
                 </div>
@@ -371,7 +398,9 @@ export default function Dashboard() {
                   disabled={loading}
                   className="w-full accent-emerald-500 cursor-pointer h-1.5 rounded-lg appearance-none"
                   style={{
-                    background: `linear-gradient(to right, #10b981 0%, #10b981 ${((maxIterations - 1) / 3) * 100}%, #0f172a ${((maxIterations - 1) / 3) * 100}%, #0f172a 100%)`
+                    background: isDarkMode
+                      ? `linear-gradient(to right, #10b981 0%, #10b981 ${((maxIterations - 1) / 3) * 100}%, #0f172a ${((maxIterations - 1) / 3) * 100}%, #0f172a 100%)`
+                      : `linear-gradient(to right, #10b981 0%, #10b981 ${((maxIterations - 1) / 3) * 100}%, #e2e8f0 ${((maxIterations - 1) / 3) * 100}%, #e2e8f0 100%)`
                   }}
                 />
               </div>
@@ -379,7 +408,7 @@ export default function Dashboard() {
               <button
                 type="submit"
                 disabled={loading || !query.trim()}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-900 disabled:text-slate-600 disabled:cursor-not-allowed text-slate-950 font-bold py-2.5 px-4 rounded-lg text-xs font-mono flex items-center justify-center space-x-2 shadow-lg transition duration-200 cursor-pointer"
+                className={`w-full text-xs font-mono font-bold py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 shadow-lg transition duration-200 cursor-pointer ${isDarkMode ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 disabled:bg-slate-900 disabled:text-slate-600 disabled:cursor-not-allowed" : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed border border-emerald-600/10"}`}
               >
                 {loading ? (
                   <>
@@ -397,14 +426,14 @@ export default function Dashboard() {
           </div>
 
           {/* Connected Graph Topology */}
-          <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex-1 flex flex-col justify-between">
+          <div className={`border shadow-2xl rounded-xl p-5 flex-1 flex flex-col justify-between transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`}>
             <div>
-              <h2 className="text-xs font-bold tracking-widest uppercase text-slate-400 flex items-center gap-2 mb-6 font-mono">
-                <Activity className="h-4 w-4 text-emerald-400" /> Graph Visualizer
+              <h2 className={`text-xs font-bold tracking-widest uppercase flex items-center gap-2 mb-6 font-mono ${isDarkMode ? "text-slate-400" : "text-slate-550"}`}>
+                <Activity className="h-4 w-4 text-emerald-500" /> Graph Visualizer
               </h2>
               
               <div className="space-y-4 relative select-none">
-                <div className="absolute left-[29px] top-6 bottom-6 w-0.5 border-l border-dashed border-slate-800 z-0" />
+                <div className={`absolute left-[29px] top-6 bottom-6 w-0.5 border-l border-dashed z-0 ${isDarkMode ? "border-slate-800" : "border-slate-200"}`} />
                 {[
                   { id: "plannerNode", label: "Planner Agent", desc: "Formulates objective blueprints" },
                   { id: "searchNode", label: "Retrieval Cluster", desc: "Concurrent multi-query search protocols" },
@@ -422,20 +451,20 @@ export default function Dashboard() {
                             isActive
                               ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
                               : isCompleted
-                              ? "bg-slate-900 border-slate-800 text-slate-400"
-                              : "bg-slate-950 border-slate-900 text-slate-650"
+                              ? "bg-slate-900 border-slate-800 text-slate-400 animate-fade-in"
+                              : isDarkMode ? "bg-slate-950 border-slate-900 text-slate-600" : "bg-slate-50 border-slate-200 text-slate-400"
                           }`}
                         >
                           {isActive ? (
-                            <RotateCw className="h-4 w-4 animate-spin text-emerald-400" />
+                            <RotateCw className="h-4 w-4 animate-spin text-emerald-500" />
                           ) : isCompleted ? (
-                            <CheckCircle2 className="h-4 w-4 text-emerald-400 animate-fade-in" />
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500 animate-fade-in" />
                           ) : (
                             <span className="text-2xs">0{idx + 1}</span>
                           )}
                         </div>
                         <div>
-                          <p className="text-xs font-bold tracking-wide font-mono">
+                          <p className={`text-xs font-bold tracking-wide font-mono ${isDarkMode ? "text-slate-100" : "text-slate-900"}`}>
                             {step.label}
                           </p>
                           <p className="text-[11px] text-slate-500 mt-0.5 font-mono">{step.desc}</p>
@@ -449,7 +478,7 @@ export default function Dashboard() {
 
             {/* Loop Status Bar */}
             {score !== null && (
-              <div className="mt-6 border border-slate-800/85 bg-slate-950/60 rounded-xl p-3 flex items-center justify-between font-mono select-none">
+              <div className={`mt-6 border p-3 flex items-center justify-between font-mono select-none rounded-xl ${isDarkMode ? "border-slate-800/85 bg-slate-950/60" : "border-slate-200 bg-slate-50/50"}`}>
                 <span className="text-2xs text-slate-500">Critic Score Outcome:</span>
                 <span
                   className={`text-xs font-bold px-2 py-0.5 rounded border ${
@@ -501,16 +530,16 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive Knowledge Dashboard Panel */}
-          <div className="backdrop-blur-md bg-slate-900/30 border border-slate-800/80 backdrop-blur-sm rounded-2xl flex-1 flex flex-col overflow-hidden min-h-[450px]">
+          <div className={`border flex-1 flex flex-col overflow-hidden min-h-[450px] shadow-2xl rounded-xl transition-all duration-350 ${isDarkMode ? "bg-slate-900/30 border-slate-800/80 backdrop-blur-sm" : "bg-white border-slate-200/80"}`}>
             
             {/* Sliding Tab Header */}
-            <div className="flex p-1 bg-slate-950 border border-slate-850 rounded-lg max-w-sm mt-4 ml-4 select-none">
+            <div className={`flex p-1 border rounded-lg max-w-sm mt-4 ml-4 select-none ${isDarkMode ? "bg-slate-950 border-slate-800/60" : "bg-slate-50 border-slate-200"}`}>
               <button
                 onClick={() => setActiveTab("brief")}
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "brief" 
-                    ? "bg-slate-900 border border-slate-800 text-white shadow-md" 
-                    : "text-slate-500 hover:text-slate-300"
+                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-400"
                 }`}
               >
                 <FileText className="h-3.5 w-3.5" />
@@ -520,8 +549,8 @@ export default function Dashboard() {
                 onClick={() => setActiveTab("critic")}
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "critic" 
-                    ? "bg-slate-900 border border-slate-800 text-white shadow-md" 
-                    : "text-slate-500 hover:text-slate-300"
+                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-400"
                 }`}
               >
                 <ShieldAlert className="h-3.5 w-3.5" />
@@ -531,8 +560,8 @@ export default function Dashboard() {
                 onClick={() => setActiveTab("sources")}
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "sources" 
-                    ? "bg-slate-900 border border-slate-800 text-white shadow-md" 
-                    : "text-slate-500 hover:text-slate-300"
+                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-400"
                 }`}
               >
                 <BookOpen className="h-3.5 w-3.5" />
@@ -546,30 +575,30 @@ export default function Dashboard() {
                 document ? (
                   <div className="flex-1 flex flex-col gap-4">
                     {/* Header Utility Bar */}
-                    <div className="flex items-center justify-between border-b border-slate-900/60 pb-3 select-none">
+                    <div className={`flex items-center justify-between border-b pb-3 select-none ${isDarkMode ? "border-slate-900/60" : "border-slate-100"}`}>
                       <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-emerald-400" />
+                        <BookOpen className="h-4 w-4 text-emerald-500" />
                         <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Research brief</span>
                       </div>
                       <div className="flex items-center gap-2 font-mono">
                         <button
                           onClick={copyBriefToClipboard}
-                          className="px-2.5 py-1 text-3xs border border-slate-800 bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-white rounded flex items-center gap-1.5 transition-all"
+                          className={`px-2.5 py-1 text-3xs rounded flex items-center gap-1.5 transition-all border ${isDarkMode ? "border-slate-800 bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-white" : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-650 hover:text-slate-900 shadow-2xs"}`}
                         >
                           <FileText className="h-3 w-3" />
                           <span>Copy Brief</span>
                         </button>
                         <button
                           onClick={exportAsMarkdown}
-                          className="px-2.5 py-1 text-3xs border border-emerald-800/40 bg-emerald-950/10 hover:bg-emerald-950/30 text-emerald-400 hover:text-emerald-300 rounded flex items-center gap-1.5 transition-all"
+                          className={`px-2.5 py-1 text-3xs rounded flex items-center gap-1.5 transition-all border ${isDarkMode ? "border-emerald-800/40 bg-emerald-950/10 hover:bg-emerald-950/30 text-emerald-400 hover:text-emerald-300" : "border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/40 text-emerald-600 hover:text-emerald-700 shadow-2xs"}`}
                         >
                           <ExternalLink className="h-3 w-3" />
                           <span>Export .md</span>
                         </button>
                       </div>
                     </div>
-                    <div className="markdown-body space-y-4 leading-relaxed text-slate-300 custom-scrollbar">
-                      {renderMarkdown(document)}
+                    <div className={`markdown-body space-y-4 leading-relaxed custom-scrollbar ${isDarkMode ? "text-slate-300" : "text-slate-650"}`}>
+                      {renderMarkdown(document, isDarkMode)}
                     </div>
                   </div>
                 ) : (
@@ -617,10 +646,10 @@ export default function Dashboard() {
                     {/* Commentary Layout */}
                     <div className="md:col-span-8 flex flex-col gap-3">
                       <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
-                        <ShieldAlert className="h-4 w-4 text-emerald-400" />
+                        <ShieldAlert className="h-4 w-4 text-emerald-500" />
                         <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Auditor Notes & Gap Rectifications</span>
                       </div>
-                      <div className="flex-1 text-xs text-slate-300 leading-relaxed font-mono max-h-[300px] overflow-y-auto pr-2 custom-scrollbar bg-slate-950/20 p-3 rounded-lg border border-slate-900">
+                      <div className={`flex-1 text-xs leading-relaxed font-mono max-h-[300px] overflow-y-auto pr-2 custom-scrollbar p-3 rounded-lg border ${isDarkMode ? "text-slate-300 bg-slate-950/20 border-slate-900" : "text-slate-650 bg-slate-50/50 border-slate-200"}`}>
                         {feedback || "Evaluator has not left notes on current payload."}
                       </div>
                     </div>
@@ -638,7 +667,7 @@ export default function Dashboard() {
                 document ? (
                   <div className="flex-1 flex flex-col gap-4">
                     <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
-                      <BookOpen className="h-4 w-4 text-emerald-400" />
+                      <BookOpen className="h-4 w-4 text-emerald-500" />
                       <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Fact-checked mapping data index metrics</span>
                     </div>
                     <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar font-mono">
@@ -647,14 +676,14 @@ export default function Dashboard() {
                         { id: 2, host: "github.com/engine-telemetry", type: "Developer Specification", trust: "High" },
                         { id: 3, host: "ieee.org/publications", type: "Academic Standard Matrix", trust: "Verified" }
                       ].map((src) => (
-                        <div key={src.id} className="bg-slate-950/40 p-4 rounded-xl border border-slate-850 flex justify-between items-center text-xs hover:border-slate-700 transition-colors">
+                        <div key={src.id} className={`p-4 rounded-xl border flex justify-between items-center text-xs transition-colors ${isDarkMode ? "bg-slate-950/40 border-slate-850 hover:border-slate-700" : "bg-slate-50/50 border-slate-200 hover:border-slate-300 shadow-2xs"}`}>
                           <div className="space-y-1">
-                            <p className="font-semibold text-slate-250 flex items-center gap-1.5">
-                              {src.host} <ExternalLink className="h-3 w-3 text-slate-500" />
+                            <p className="font-semibold flex items-center gap-1.5">
+                              <span className={isDarkMode ? "text-slate-200" : "text-slate-800"}>{src.host}</span> <ExternalLink className="h-3 w-3 text-slate-500" />
                             </p>
                             <p className="text-[10px] text-slate-500">{src.type}</p>
                           </div>
-                          <span className="bg-slate-900 border border-slate-800 text-[9px] font-bold text-emerald-400 px-2 py-1 rounded uppercase tracking-wider">
+                          <span className={`border text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wider ${isDarkMode ? "bg-slate-900 border-slate-800 text-emerald-400" : "bg-white border-slate-200 text-emerald-600 shadow-2xs"}`}>
                             {src.trust}
                           </span>
                         </div>
