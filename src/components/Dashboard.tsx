@@ -117,7 +117,7 @@ function renderMarkdown(md: string): React.ReactNode {
                   {rows.map((row, rowIdx) => (
                     <tr key={rowIdx} className="hover:bg-slate-800/10 transition">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400">{inlineParse(cell)}</td>
+                        <td key={cellIdx} className="px-4 py-3 text-xs text-slate-400 font-mono text-[11px]">{inlineParse(cell)}</td>
                       ))}
                     </tr>
                   ))}
@@ -131,7 +131,7 @@ function renderMarkdown(md: string): React.ReactNode {
       // 7. Regular Paragraph
       const paragraphLines = trimmed.split("\n").map(l => l.trim()).filter(Boolean);
       return (
-        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-400">
+        <p key={`${i}-${j}`} className="mb-4 leading-relaxed text-xs text-slate-300">
           {paragraphLines.map((line, idx) => (
             <React.Fragment key={idx}>
               {inlineParse(line)}
@@ -369,7 +369,10 @@ export default function Dashboard() {
                   value={maxIterations}
                   onChange={(e) => setMaxIterations(Number(e.target.value))}
                   disabled={loading}
-                  className="w-full accent-emerald-500 cursor-pointer bg-slate-900 h-1.5 rounded-lg appearance-none"
+                  className="w-full accent-emerald-500 cursor-pointer h-1.5 rounded-lg appearance-none"
+                  style={{
+                    background: `linear-gradient(to right, #10b981 0%, #10b981 ${((maxIterations - 1) / 3) * 100}%, #0f172a ${((maxIterations - 1) / 3) * 100}%, #0f172a 100%)`
+                  }}
                 />
               </div>
 
