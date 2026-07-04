@@ -101,7 +101,7 @@ function renderMarkdown(md: string, isDarkMode: boolean): React.ReactNode {
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         const items = trimmed.split(/\n[\-\*]\s/g).map(item => item.replace(/^[\-\*]\s/, ""));
         return (
-          <ul key={`${i}-${j}`} className="my-3 space-y-2 pl-2">
+          <ul key={`${i}-${j}`} className="list-disc pl-5 mb-4 space-y-2 text-xs text-slate-400">
             {items.map((item, idx) => (
               <li key={idx} className={`flex items-start gap-2.5 text-xs leading-relaxed ${isDarkMode ? "text-slate-300" : "text-slate-650"}`}>
                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
@@ -163,6 +163,7 @@ function renderMarkdown(md: string, isDarkMode: boolean): React.ReactNode {
 // ==========================================
 export default function Dashboard() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false); // Loads in light mode as default
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true); // Defaults to Demo Mode to preserve quota
   const [query, setQuery] = useState("");
   const [maxIterations, setMaxIterations] = useState(2);
   const [loading, setLoading] = useState(false);
@@ -199,11 +200,14 @@ export default function Dashboard() {
 
     addLog("system", `Initializing Agentic Verification protocol for: "${query}"`);
 
+    // Tunnel the __DEMO__ suffix to the backend silently if Demo Mode is active
+    const finalQuery = isDemoMode ? `${query} __DEMO__` : query;
+
     try {
       const response = await fetch("/api/research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, maxIterations }),
+        body: JSON.stringify({ query: finalQuery, maxIterations }),
       });
 
       if (!response.body) throw new Error("Stream channel unreachable.");
@@ -284,15 +288,15 @@ export default function Dashboard() {
   };
 
   // Dynamic console color mappings
-  const getLogStyle = (node: string, msg: string) => {
+  const getLogStyle = (node: string, msg: string, dark: boolean) => {
     const lowerMsg = msg.toLowerCase();
-    if (node === "system") return isDarkMode ? "text-slate-500 font-medium" : "text-slate-400 font-medium";
-    if (node === "error" || lowerMsg.includes("failed") || lowerMsg.includes("exception")) return "text-rose-400 font-semibold";
-    if (lowerMsg.startsWith("planner")) return "text-cyan-400";
-    if (lowerMsg.startsWith("searcher")) return "text-purple-400";
-    if (lowerMsg.startsWith("critic")) return "text-emerald-400";
-    if (lowerMsg.startsWith("synthesizer")) return "text-amber-400";
-    return isDarkMode ? "text-slate-300" : "text-slate-100";
+    if (node === "system") return dark ? "text-slate-500 font-medium" : "text-slate-500 font-medium";
+    if (node === "error" || lowerMsg.includes("failed") || lowerMsg.includes("exception")) return dark ? "text-rose-400 font-semibold" : "text-rose-600 font-semibold";
+    if (lowerMsg.startsWith("planner")) return dark ? "text-cyan-400" : "text-cyan-700 font-medium";
+    if (lowerMsg.startsWith("searcher")) return dark ? "text-purple-400" : "text-purple-700 font-medium";
+    if (lowerMsg.startsWith("critic")) return dark ? "text-emerald-400" : "text-emerald-700 font-medium";
+    if (lowerMsg.startsWith("synthesizer")) return dark ? "text-amber-400" : "text-amber-600 font-medium";
+    return dark ? "text-slate-300" : "text-slate-700";
   };
 
   // Graph state mappings
@@ -306,7 +310,7 @@ export default function Dashboard() {
     if (isCompleted) {
       return "border-emerald-500/80 bg-slate-900/40 text-emerald-400 animate-fade-in";
     }
-    return isDarkMode ? "border-slate-800/85 bg-slate-950/40 text-slate-500 select-none" : "border-slate-200 bg-white/40 text-slate-400 select-none";
+    return "border-slate-800/85 bg-slate-950/40 text-slate-500 select-none";
   };
 
   // Radial progress ring score metrics
@@ -377,7 +381,7 @@ export default function Dashboard() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     disabled={loading}
-                    className={`w-full border focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 rounded-lg px-4 py-3 text-xs outline-none transition duration-200 font-mono ${isDarkMode ? "bg-slate-950/80 border-slate-800/80 text-slate-200 placeholder-slate-650" : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white"}`}
+                    className={`w-full bg-slate-950/80 border border-slate-800/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 rounded-lg px-4 py-3 text-xs outline-none transition duration-200 font-mono ${isDarkMode ? "bg-slate-950/80 border-slate-800/80 text-slate-200 placeholder-slate-650" : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white"}`}
                   />
                 </div>
               </div>
@@ -403,6 +407,35 @@ export default function Dashboard() {
                       : `linear-gradient(to right, #10b981 0%, #10b981 ${((maxIterations - 1) / 3) * 100}%, #e2e8f0 ${((maxIterations - 1) / 3) * 100}%, #e2e8f0 100%)`
                   }}
                 />
+              </div>
+
+              {/* Mode Selection Sliding Toggle */}
+              <div className={`flex items-center justify-between text-2xs font-mono select-none border-t pt-4 ${isDarkMode ? "border-slate-800/80" : "border-slate-100"}`}>
+                <span className={isDarkMode ? "text-slate-550" : "text-slate-500"}>Execution Mode</span>
+                <div className={`relative flex p-0.5 border rounded-lg ${isDarkMode ? "bg-slate-950 border-slate-800/60" : "bg-slate-50 border-slate-200"}`}>
+                  <button
+                    type="button"
+                    onClick={() => setIsDemoMode(true)}
+                    className={`py-1 px-2.5 text-3xs font-semibold font-mono rounded transition-all duration-300 ${
+                      isDemoMode 
+                        ? isDarkMode ? "bg-slate-900 text-white shadow-sm" : "bg-white text-slate-900 shadow-2xs border border-slate-200"
+                        : "text-slate-500 hover:text-slate-400"
+                    }`}
+                  >
+                    Demo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDemoMode(false)}
+                    className={`py-1 px-2.5 text-3xs font-semibold font-mono rounded transition-all duration-300 ${
+                      !isDemoMode 
+                        ? isDarkMode ? "bg-slate-900 text-white shadow-sm" : "bg-white text-slate-900 shadow-2xs border border-slate-200"
+                        : "text-slate-500 hover:text-slate-400"
+                    }`}
+                  >
+                    Live
+                  </button>
+                </div>
               </div>
 
               <button
@@ -498,10 +531,10 @@ export default function Dashboard() {
         <section className="xl:col-span-7 flex flex-col space-y-6">
           
           {/* Live System Terminal */}
-          <div className="bg-slate-950 border border-slate-800/50 shadow-2xl rounded-xl p-4 h-64 flex flex-col font-mono text-[11px]">
-            <div className="flex items-center justify-between border-b border-slate-900/60 pb-3 mb-4 select-none">
-              <span className="text-slate-400 flex items-center gap-2 font-bold tracking-wider">
-                <Terminal className="h-4 w-4 text-emerald-400" /> LIVE LOGSTREAM TELEMETRY
+          <div className={`border shadow-2xl rounded-xl p-4 h-64 flex flex-col font-mono text-[11px] transition-all duration-350 ${isDarkMode ? "bg-slate-950 border-slate-800/50" : "bg-[#f1f5f9] border-slate-200/80"}`}>
+            <div className={`flex items-center justify-between border-b pb-3 mb-4 select-none ${isDarkMode ? "border-slate-900/60" : "border-slate-200"}`}>
+              <span className={`flex items-center gap-2 font-bold tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
+                <Terminal className="h-4 w-4 text-emerald-500" /> LIVE LOGSTREAM TELEMETRY
               </span>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -516,7 +549,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 logs.map((log, index) => (
-                  <div key={index} className={`flex items-start space-x-2 leading-relaxed border-b border-slate-900/40 last:border-0 pb-1 last:pb-0 ${getLogStyle(log.node, log.message)}`}>
+                  <div key={index} className={`flex items-start space-x-2 leading-relaxed border-b last:border-0 pb-1 last:pb-0 ${isDarkMode ? "border-slate-900/40" : "border-slate-200/40"} ${getLogStyle(log.node, log.message, isDarkMode)}`}>
                     <span className="text-slate-600 shrink-0 select-none">[{log.timestamp}]</span>
                     <span className="font-bold uppercase shrink-0 tracking-wide">
                       {log.node}:
@@ -538,7 +571,7 @@ export default function Dashboard() {
                 onClick={() => setActiveTab("brief")}
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "brief" 
-                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm"
+                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm animate-fade-in"
                     : "text-slate-500 hover:text-slate-400"
                 }`}
               >
@@ -549,7 +582,7 @@ export default function Dashboard() {
                 onClick={() => setActiveTab("critic")}
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "critic" 
-                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm"
+                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm animate-fade-in"
                     : "text-slate-500 hover:text-slate-400"
                 }`}
               >
@@ -560,7 +593,7 @@ export default function Dashboard() {
                 onClick={() => setActiveTab("sources")}
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "sources" 
-                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm"
+                    ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm animate-fade-in"
                     : "text-slate-500 hover:text-slate-400"
                 }`}
               >
