@@ -3,7 +3,10 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { VeritasState } from "./state";
 
 // Initialize Gemini LLM conditionally for resilience on Vercel Edge/Serverless environments
-const getLLM = () => {
+const getLLM = (query?: string) => {
+  // If the query contains the hidden demo suffix, force simulation mode
+  if (query && query.includes("__DEMO__")) return null;
+
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) return null;
   return new ChatGoogleGenerativeAI({
@@ -17,10 +20,11 @@ const getLLM = () => {
 // Safe implementation for mock searching
 async function executeSearch(query: string): Promise<string[]> {
   const apiKey = process.env.TAVILY_API_KEY;
-  if (!apiKey) {
+  if (!apiKey || query.includes("__DEMO__")) {
+    const cleanQuery = query.replace("__DEMO__", "").trim();
     return [
-      `Mock analysis context for query "${query}": Found relevant competitive indicators, architectural benchmarks, and system metrics from key repositories.`,
-      `Synthesized industry standard data pointing to optimal runtime configurations matching "${query}".`
+      `Mock analysis context for query "${cleanQuery}": Found relevant competitive indicators, architectural benchmarks, and system metrics from key repositories.`,
+      `Synthesized industry standard data pointing to optimal runtime configurations matching "${cleanQuery}".`
     ];
   }
 
@@ -44,8 +48,8 @@ async function executeSearch(query: string): Promise<string[]> {
 
 // 1. Planner Node
 export async function plannerNode(state: typeof VeritasState.State) {
-  const llm = getLLM();
-  const query = state.userQuery;
+  const llm = getLLM(state.userQuery);
+  const query = state.userQuery.replace("__DEMO__", "").trim();
   const feedback = state.criticFeedback;
   const currentIteration = state.iterations;
 
@@ -112,8 +116,8 @@ export async function searchNode(state: typeof VeritasState.State) {
 
 // 3. Fact-Checker / Critic Node
 export async function criticNode(state: typeof VeritasState.State) {
-  const llm = getLLM();
-  const query = state.userQuery;
+  const llm = getLLM(state.userQuery);
+  const query = state.userQuery.replace("__DEMO__", "").trim();
   const results = state.searchResults;
   const currentIteration = state.iterations;
 
@@ -162,8 +166,8 @@ export async function criticNode(state: typeof VeritasState.State) {
 
 // 4. Synthesizer & Format Node
 export async function synthesizerNode(state: typeof VeritasState.State) {
-  const llm = getLLM();
-  const query = state.userQuery;
+  const llm = getLLM(state.userQuery);
+  const query = state.userQuery.replace("__DEMO__", "").trim();
   const data = state.searchResults;
   
   let output = "";
