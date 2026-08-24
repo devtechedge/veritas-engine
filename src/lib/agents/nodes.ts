@@ -1,31 +1,31 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { VeritasState } from "./state";
+import {
+  demoCritic,
+  demoPlan,
+  demoSearchHits,
+  isDemoQuery,
+  stripDemoSuffix,
+} from "./demo";
 
-// Initialize Gemini LLM conditionally for resilience on Vercel Edge/Serverless environments
 const getLLM = (query?: string) => {
-  // If the query contains the hidden demo suffix, force simulation mode
-  if (query && query.includes("__DEMO__")) return null;
+  if (query && isDemoQuery(query)) return null;
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) return null;
   return new ChatGoogleGenerativeAI({
     apiKey: apiKey,
-    model: "gemini-2.5-flash", // Updated to the active stable Gemini 2.5 Flash model
+    model: "gemini-2.5-flash",
     temperature: 0.2,
-    convertSystemMessageToHumanContent: true, // Correct LangChain property to merge system messages for Gemini
+    convertSystemMessageToHumanContent: true,
   });
 };
 
-// Safe implementation for mock searching
 async function executeSearch(query: string): Promise<string[]> {
   const apiKey = process.env.TAVILY_API_KEY;
-  if (!apiKey || query.includes("__DEMO__")) {
-    const cleanQuery = query.replace("__DEMO__", "").trim();
-    return [
-      `Mock analysis context for query "${cleanQuery}": Found relevant competitive indicators, architectural benchmarks, and system metrics from key repositories.`,
-      `Synthesized industry standard data pointing to optimal runtime configurations matching "${cleanQuery}".`
-    ];
+  if (!apiKey || isDemoQuery(query)) {
+    return demoSearchHits(query);
   }
 
   try {
@@ -34,7 +34,7 @@ async function executeSearch(query: string): Promise<string[]> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         api_key: apiKey,
-        query,
+        query: stripDemoSuffix(query),
         search_depth: "basic",
         max_results: 3,
       }),
@@ -46,10 +46,9 @@ async function executeSearch(query: string): Promise<string[]> {
   }
 }
 
-// 1. Planner Node
 export async function plannerNode(state: typeof VeritasState.State) {
   const llm = getLLM(state.userQuery);
-  const query = state.userQuery.replace("__DEMO__", "").trim();
+  const query = stripDemoSuffix(state.userQuery);
   const feedback = state.criticFeedback;
   const currentIteration = state.iterations;
 
@@ -59,7 +58,7 @@ export async function plannerNode(state: typeof VeritasState.State) {
   if (llm) {
     const systemPrompt = `You are an elite Research Architect. Break down the user's inquiry into 3 highly precise search queries. Ensure they address gaps identified in any prior feedback. Return ONLY a valid JSON array of strings.`;
     const userPrompt = `User Query: "${query}"\n\nPrior Critic Feedback: "${feedback || "None"}"\nIteration: ${currentIteration}`;
-    
+
     try {
       const response = await llm.invoke([
         new SystemMessage(systemPrompt),
@@ -68,17 +67,13 @@ export async function plannerNode(state: typeof VeritasState.State) {
       const cleaned = response.content.toString().replace(/```json|```/g, "").trim();
       plan = JSON.parse(cleaned);
       logMsg = `Planner: Generated execution strategy containing ${plan.length} objectives.`;
-    } catch (error: any) {
+    } catch (error: unknown) {
       plan = [`${query} key metrics`, `${query} architecture`, `${query} implementation strategies`];
-      logMsg = `Planner (Fallback): Generated query execution tasks due to API exception: ${error.message || error.toString()}`;
+      const message = error instanceof Error ? error.message : String(error);
+      logMsg = `Planner (Fallback): Generated query execution tasks due to API exception: ${message}`;
     }
   } else {
-    // Interactive demo pathway
-    plan = [
-      `Technical implementation metrics for ${query}`,
-      `Architectural benchmarks of ${query}`,
-      `Security profile and edge execution cases of ${query}`
-    ];
+    plan = demoPlan(query);
     logMsg = `Planner (Simulation): Formulated high-level search matrices.`;
   }
 
@@ -88,16 +83,15 @@ export async function plannerNode(state: typeof VeritasState.State) {
   };
 }
 
-// 2. Search / Tool Execution Node
 export async function searchNode(state: typeof VeritasState.State) {
   const plans = state.plan.length > 0 ? state.plan : [state.userQuery];
   const logs: string[] = [];
   const searchResults: Array<{ query: string; results: string[] }> = [];
 
   logs.push(`Searcher: Commencing concurrent context retrieval across ${plans.length} nodes...`);
-  
+
   const searchPromises = plans.map(async (task) => {
-    const results = await executeSearch(task);
+    const results = await executeSearch(isDemoQuery(state.userQuery) ? `${task} __DEMO__` : task);
     return { query: task, results };
   });
 
@@ -114,10 +108,9 @@ export async function searchNode(state: typeof VeritasState.State) {
   };
 }
 
-// 3. Fact-Checker / Critic Node
 export async function criticNode(state: typeof VeritasState.State) {
   const llm = getLLM(state.userQuery);
-  const query = state.userQuery.replace("__DEMO__", "").trim();
+  const query = stripDemoSuffix(state.userQuery);
   const results = state.searchResults;
   const currentIteration = state.iterations;
 
@@ -138,22 +131,17 @@ export async function criticNode(state: typeof VeritasState.State) {
       score = parsed.score;
       feedback = parsed.feedback;
       logMsg = `Critic Audit (Iteration ${currentIteration}): Score: ${score}/10. Review Completed.`;
-    } catch (error: any) {
+    } catch (error: unknown) {
       score = currentIteration >= 1 ? 9 : 5;
       feedback = "Fallback critique evaluation triggered. Verified source reliability.";
-      logMsg = `Critic Audit (Fallback): Automated evaluation complete. Error: ${error.message || error.toString()}`;
+      const message = error instanceof Error ? error.message : String(error);
+      logMsg = `Critic Audit (Fallback): Automated evaluation complete. Error: ${message}`;
     }
   } else {
-    // Simulate progression to show self-correction loop visually
-    if (currentIteration === 0) {
-      score = 5;
-      feedback = "Initial retrieval contains useful foundational nodes, but lacks fine-grained architectural limits and edge validation cases. Re-evaluate queries to target low-level constraints.";
-      logMsg = `Critic Audit (Simulation): Score: 5/10. Gap analysis demands higher precision targets. Rerouting to Planner.`;
-    } else {
-      score = 9;
-      feedback = "Verified deep implementation benchmarks and execution constraints. Syntactic depth qualifies criteria constraints.";
-      logMsg = `Critic Audit (Simulation): Score: 9/10. Content requirements fully matched. Synthesized output approved.`;
-    }
+    const simulated = demoCritic(currentIteration);
+    score = simulated.score;
+    feedback = simulated.feedback;
+    logMsg = simulated.log;
   }
 
   return {
@@ -164,12 +152,11 @@ export async function criticNode(state: typeof VeritasState.State) {
   };
 }
 
-// 4. Synthesizer & Format Node
 export async function synthesizerNode(state: typeof VeritasState.State) {
   const llm = getLLM(state.userQuery);
-  const query = state.userQuery.replace("__DEMO__", "").trim();
+  const query = stripDemoSuffix(state.userQuery);
   const data = state.searchResults;
-  
+
   let output = "";
   let logMsg = "Synthesizer: Transforming verified sources into semantic Markdown document.";
 
@@ -183,12 +170,12 @@ export async function synthesizerNode(state: typeof VeritasState.State) {
         new HumanMessage(userPrompt),
       ]);
       output = response.content.toString();
-    } catch (error: any) {
-      output = `### System Architecture Review: ${query}\n\n*Failed to generate live model document response.*\n\n**API Error Details:** \`${error.message || error.toString()}\``;
-      logMsg = `Synthesizer (Fallback): Generation failed due to API exception: ${error.message || error.toString()}`;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      output = `### System Architecture Review: ${query}\n\n*Failed to generate live model document response.*\n\n**API Error Details:** \`${message}\``;
+      logMsg = `Synthesizer (Fallback): Generation failed due to API exception: ${message}`;
     }
   } else {
-    // Corrected double newline markdown layout mapping
     output = `
 # Engineering Architecture Brief: ${query}
 
