@@ -3,8 +3,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { 
   Play, RotateCw, Terminal, CheckCircle2, FileText, 
-  Layers, Sliders, ShieldAlert, BookOpen, ExternalLink, Activity
+  Sliders, ShieldAlert, BookOpen, ExternalLink, Activity
 } from "lucide-react";
+
+const GRAPH_NODE_IDS: Record<string, string> = {
+  planner: "plannerNode",
+  search: "searchNode",
+  critic: "criticNode",
+  synthesizer: "synthesizerNode",
+};
 
 interface LogEntry {
   node: string;
@@ -162,8 +169,8 @@ function renderMarkdown(md: string, isDarkMode: boolean): React.ReactNode {
 // CORE DASHBOARD COMPONENT
 // ==========================================
 export default function Dashboard() {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false); // Loads in light mode as default
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(true); // Defaults to Demo Mode to preserve quota
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
   const [query, setQuery] = useState("");
   const [maxIterations, setMaxIterations] = useState(2);
   const [loading, setLoading] = useState(false);
@@ -235,7 +242,7 @@ export default function Dashboard() {
             const payload = JSON.parse(dataMatch[1].trim());
 
             if (eventType === "node_complete") {
-              const node = payload.node;
+              const node = GRAPH_NODE_IDS[payload.node] || payload.node;
               const output = payload.output;
               setActiveNode(node);
               setExecutionSteps((prev) => [...prev, node]);
@@ -344,6 +351,7 @@ export default function Dashboard() {
           {/* Theme Toggle Button */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
+            data-testid="theme-toggle"
             className={`p-1.5 rounded-lg border transition-all duration-300 mr-2 flex items-center justify-center ${isDarkMode ? "bg-slate-900 border-slate-850 text-slate-400 hover:text-white" : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm"}`}
             aria-label="Toggle theme"
           >
@@ -367,7 +375,7 @@ export default function Dashboard() {
         <section className="xl:col-span-5 flex flex-col space-y-6">
           
           {/* Query Inputs Panel */}
-          <div className={`border shadow-2xl rounded-xl p-5 space-y-4 transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`}>
+          <div className={`border shadow-2xl rounded-xl p-5 space-y-4 transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`} data-testid="orchestration-panel">
             <h2 className={`text-xs font-bold tracking-widest uppercase flex items-center gap-2 font-mono ${isDarkMode ? "text-slate-400" : "text-slate-550"}`}>
               <Sliders className="h-4 w-4 text-emerald-500" /> Orchestration Panel
             </h2>
@@ -381,6 +389,7 @@ export default function Dashboard() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     disabled={loading}
+                    data-testid="inquiry-input"
                     className={`w-full bg-slate-950/80 border border-slate-800/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 rounded-lg px-4 py-3 text-xs outline-none transition duration-200 font-mono ${isDarkMode ? "bg-slate-950/80 border-slate-800/80 text-slate-200 placeholder-slate-650" : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white"}`}
                   />
                 </div>
@@ -416,6 +425,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => setIsDemoMode(true)}
+                    data-testid="demo-mode"
                     className={`py-1 px-2.5 text-3xs font-semibold font-mono rounded transition-all duration-300 ${
                       isDemoMode 
                         ? isDarkMode ? "bg-slate-900 text-white shadow-sm" : "bg-white text-slate-900 shadow-2xs border border-slate-200"
@@ -427,6 +437,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => setIsDemoMode(false)}
+                    data-testid="live-mode"
                     className={`py-1 px-2.5 text-3xs font-semibold font-mono rounded transition-all duration-300 ${
                       !isDemoMode 
                         ? isDarkMode ? "bg-slate-900 text-white shadow-sm" : "bg-white text-slate-900 shadow-2xs border border-slate-200"
@@ -441,6 +452,7 @@ export default function Dashboard() {
               <button
                 type="submit"
                 disabled={loading || !query.trim()}
+                data-testid="initiate-research"
                 className={`w-full text-xs font-mono font-bold py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 shadow-lg transition duration-200 cursor-pointer ${isDarkMode ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 disabled:bg-slate-900 disabled:text-slate-600 disabled:cursor-not-allowed" : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed border border-emerald-600/10"}`}
               >
                 {loading ? (
@@ -459,7 +471,7 @@ export default function Dashboard() {
           </div>
 
           {/* Connected Graph Topology */}
-          <div className={`border shadow-2xl rounded-xl p-5 flex-1 flex flex-col justify-between transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`}>
+          <div className={`border shadow-2xl rounded-xl p-5 flex-1 flex flex-col justify-between transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`} data-testid="graph-visualizer">
             <div>
               <h2 className={`text-xs font-bold tracking-widest uppercase flex items-center gap-2 mb-6 font-mono ${isDarkMode ? "text-slate-400" : "text-slate-550"}`}>
                 <Activity className="h-4 w-4 text-emerald-500" /> Graph Visualizer
@@ -531,7 +543,7 @@ export default function Dashboard() {
         <section className="xl:col-span-7 flex flex-col space-y-6">
           
           {/* Live System Terminal */}
-          <div className={`border shadow-2xl rounded-xl p-4 h-64 flex flex-col font-mono text-[11px] transition-all duration-350 ${isDarkMode ? "bg-slate-950 border-slate-800/50" : "bg-[#f1f5f9] border-slate-200/80"}`}>
+          <div className={`border shadow-2xl rounded-xl p-4 h-64 flex flex-col font-mono text-[11px] transition-all duration-350 ${isDarkMode ? "bg-slate-950 border-slate-800/50" : "bg-[#f1f5f9] border-slate-200/80"}`} data-testid="logstream">
             <div className={`flex items-center justify-between border-b pb-3 mb-4 select-none ${isDarkMode ? "border-slate-900/60" : "border-slate-200"}`}>
               <span className={`flex items-center gap-2 font-bold tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
                 <Terminal className="h-4 w-4 text-emerald-500" /> LIVE LOGSTREAM TELEMETRY
@@ -569,6 +581,7 @@ export default function Dashboard() {
             <div className={`flex p-1 border rounded-lg max-w-sm mt-4 ml-4 select-none ${isDarkMode ? "bg-slate-950 border-slate-800/60" : "bg-slate-50 border-slate-200"}`}>
               <button
                 onClick={() => setActiveTab("brief")}
+                data-testid="tab-brief"
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "brief" 
                     ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm animate-fade-in"
@@ -580,6 +593,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("critic")}
+                data-testid="tab-critic"
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "critic" 
                     ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm animate-fade-in"
@@ -591,6 +605,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("sources")}
+                data-testid="tab-sources"
                 className={`flex-1 py-1.5 px-3 text-xs font-semibold font-mono text-center transition-all duration-300 rounded-md flex items-center justify-center gap-1.5 ${
                   activeTab === "sources" 
                     ? isDarkMode ? "bg-slate-900 border border-slate-800 text-white shadow-md" : "bg-white border border-slate-200 text-slate-900 shadow-sm animate-fade-in"
@@ -630,7 +645,7 @@ export default function Dashboard() {
                         </button>
                       </div>
                     </div>
-                    <div className={`markdown-body space-y-4 leading-relaxed custom-scrollbar ${isDarkMode ? "text-slate-300" : "text-slate-650"}`}>
+                    <div className={`markdown-body space-y-4 leading-relaxed custom-scrollbar ${isDarkMode ? "text-slate-300" : "text-slate-650"}`} data-testid="synthesized-brief">
                       {renderMarkdown(document, isDarkMode)}
                     </div>
                   </div>
@@ -668,7 +683,7 @@ export default function Dashboard() {
                             strokeLinecap="round"
                           />
                         </svg>
-                        <span className="absolute font-mono text-lg font-bold text-white">{score}<span className="text-slate-500 text-xs">/10</span></span>
+                        <span className="absolute font-mono text-lg font-bold text-white" data-testid="quality-score">{score}<span className="text-slate-500 text-xs">/10</span></span>
                       </div>
                       <div className="text-center mt-3 font-mono">
                         <h4 className="text-2xs font-semibold text-slate-300 uppercase tracking-wider">Quality Audit Score</h4>
