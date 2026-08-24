@@ -23,6 +23,10 @@ This is the **only** public repo for the project.
 
 ## Screenshots
 
+<p align="center">
+  <img src="docs/social-preview.png" alt="Veritas Engine" width="800">
+</p>
+
 | Console | Cycle |
 |---------|-------|
 | ![Dark orchestration panel and graph](docs/screenshots/01-overview.png) | ![Live logstream and graph during a demo run](docs/screenshots/02-cycle-running.png) |
