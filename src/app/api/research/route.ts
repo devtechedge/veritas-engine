@@ -1,24 +1,35 @@
 import { NextRequest } from "next/server";
 import { graph } from "@/lib/agents/graph";
 import { formatSSE } from "@/lib/utils/stream";
+import { parseResearchRequest } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const { query, maxIterations = 3 } = await req.json();
-
-  if (!query) {
-    return new Response(JSON.stringify({ error: "Query is required" }), {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "JSON object required" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
 
+  const parsed = parseResearchRequest(body);
+  if (!parsed.ok) {
+    return new Response(JSON.stringify({ error: parsed.error }), {
+      status: parsed.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const { query, maxIterations } = parsed;
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
-      const sendUpdate = (event: string, payload: Record<string, any>) => {
+      const sendUpdate = (event: string, payload: Record<string, unknown>) => {
         controller.enqueue(encoder.encode(formatSSE(event, payload)));
       };
 
@@ -27,7 +38,7 @@ export async function POST(req: NextRequest) {
 
         const graphInput = {
           userQuery: query,
-          maxIterations: maxIterations,
+          maxIterations,
           iterations: 0,
           messages: [],
           plan: [],
@@ -45,8 +56,7 @@ export async function POST(req: NextRequest) {
 
         for await (const update of eventStream) {
           const nodeName = Object.keys(update)[0];
-          // Assert update to a Record to allow dynamic string indexing on LangGraph output
-          const nodeOutput = (update as Record<string, any>)[nodeName];
+          const nodeOutput = (update as Record<string, Record<string, unknown>>)[nodeName];
 
           sendUpdate("node_complete", {
             node: nodeName,
@@ -63,8 +73,9 @@ export async function POST(req: NextRequest) {
 
         sendUpdate("agent_end", { message: "Task complete." });
         controller.close();
-      } catch (err: any) {
-        sendUpdate("agent_error", { error: err.message || "Execution exception occurred." });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Execution exception occurred.";
+        sendUpdate("agent_error", { error: message });
         controller.close();
       }
     },
