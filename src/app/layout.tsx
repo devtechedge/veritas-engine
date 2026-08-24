@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Veritas Self-Correcting Multi-Agent Engine",
-  description: "A professional architectural intelligence engine driven by serverless state graphs.",
+  title: "Veritas Engine — Self-Correcting Multi-Agent Research",
+  description:
+    "Planner, retrieval, critic loop, and Markdown synthesis for sourced technical briefs.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({
