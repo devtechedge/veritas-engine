@@ -39,7 +39,7 @@ export function assertSameOrigin(req: Request): GuardResult {
   if (origin) {
     try {
       const o = new URL(origin);
-      const ok = [...allowed].some((a) => {
+      const ok = Array.from(allowed).some((a) => {
         try {
           const u = new URL(a);
           return u.host === o.host;
