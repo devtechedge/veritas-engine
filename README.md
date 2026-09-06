@@ -15,7 +15,7 @@ Self-correcting multi-agent research console. Plan queries, retrieve in parallel
 
 **https://veritas-engine-woad.vercel.app/**
 
-> **Status:** The public site defaults to **Demo** mode. Planner / retrieval / critic / synthesizer run a simulated cycle (no Gemini or Tavily quota). Switch to **Live** only if `GEMINI_API_KEY` and `TAVILY_API_KEY` are set on the host. There is no login.
+> **Status:** The public site defaults to **Demo** mode (simulated). Keys alone do not enable spend — set `LIVE_MODE=true` (optional `PUBLIC_RUN_TOKEN` / `x-run-token`). There is no login.
 
 This is the **only** public repo for the project.
 
@@ -100,7 +100,7 @@ npm run test:e2e
 
 ## Security
 
-Portfolio demo: **no login**. Demo mode never calls Gemini or Tavily. Live keys stay on the server.
+Portfolio demo: **no login**. Demo is forced unless `LIVE_MODE=true` (and optional run token). Headers, origin checks, rate limits: see SECURITY.md. Live keys stay on the server.
 
 Details: **[SECURITY.md](SECURITY.md)**.
 
