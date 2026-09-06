@@ -8,8 +8,10 @@ import {
   isDemoQuery,
   stripDemoSuffix,
 } from "./demo";
+import { allowLiveProviders } from "@/lib/security/live";
 
 const getLLM = (query?: string) => {
+  if (!allowLiveProviders()) return null;
   if (query && isDemoQuery(query)) return null;
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
@@ -24,7 +26,7 @@ const getLLM = (query?: string) => {
 
 async function executeSearch(query: string): Promise<string[]> {
   const apiKey = process.env.TAVILY_API_KEY;
-  if (!apiKey || isDemoQuery(query)) {
+  if (!allowLiveProviders() || !apiKey || isDemoQuery(query)) {
     return demoSearchHits(query);
   }
 
