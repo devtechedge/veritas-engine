@@ -18,10 +18,7 @@ interface LogEntry {
   message: string;
   timestamp: string;
 }
-
-// ==========================================
 // HIGH-FIDELITY CUSTOM MARKDOWN PARSER
-// ==========================================
 function inlineParse(text: string, isDarkMode: boolean): React.ReactNode {
   if (!text) return "";
   const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
@@ -164,10 +161,7 @@ function renderMarkdown(md: string, isDarkMode: boolean): React.ReactNode {
     });
   });
 }
-
-// ==========================================
 // CORE DASHBOARD COMPONENT
-// ==========================================
 export default function Dashboard() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
