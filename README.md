@@ -15,7 +15,7 @@ Self-correcting multi-agent research console. Plan queries, retrieve in parallel
 
 **https://veritas-engine-woad.vercel.app/**
 
-> **Status:** The public site defaults to **Demo** mode (simulated). Keys alone do not enable spend — set `LIVE_MODE=true` (optional `PUBLIC_RUN_TOKEN` / `x-run-token`). There is no login.
+> **Status:** The public site defaults to **Demo** mode (simulated). Keys alone do not enable spend - set `LIVE_MODE=true` (optional `PUBLIC_RUN_TOKEN` / `x-run-token`). There is no login.
 
 This is the **only** public repo for the project.
 
@@ -61,7 +61,7 @@ This is the **only** public repo for the project.
 | Data on Vercel | Demo repository (simulated retrieval + canned brief) |
 | Auth | None |
 | Hosting | Vercel |
-| CI | GitHub Actions — Vitest, `tsc`, Playwright |
+| CI | GitHub Actions - Vitest, `tsc`, Playwright |
 
 ---
 
