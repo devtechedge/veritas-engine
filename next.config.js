@@ -13,9 +13,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  experimental: {
-    serverComponentsExternalPackages: ["@langchain/langgraph"],
-  },
+  serverExternalPackages: ["@langchain/langgraph"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
