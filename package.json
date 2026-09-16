@@ -16,7 +16,7 @@
     "@langchain/core": "^1.2.1",
     "@langchain/google-genai": "^2.2.0",
     "@langchain/langgraph": "^1.4.7",
-    "lucide-react": "^0.379.0",
+    "lucide-react": "^0.468.0",
     "next": "^15.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
