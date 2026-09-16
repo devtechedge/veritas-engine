@@ -5,7 +5,9 @@ test.describe("Veritas Engine console", () => {
     await page.goto("/");
     await expect(page.getByTestId("orchestration-panel")).toBeVisible();
     await expect(page.getByTestId("graph-visualizer")).toBeVisible();
-    await expect(page.getByText("VERITAS ENGINE")).toBeVisible();
+    // Exact match: a substring match also picks up the document <title>,
+    // which is not rendered, and strict mode then rejects the locator.
+    await expect(page.getByText("VERITAS ENGINE", { exact: true })).toBeVisible();
     await expect(page.getByTestId("initiate-research")).toBeDisabled();
   });
 
