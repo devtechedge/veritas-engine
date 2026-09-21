@@ -392,7 +392,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Grid Workspace */}
-      <main className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 xl:p-8 max-w-[1600px] mx-auto w-full overflow-hidden">
+      <main className="grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 xl:p-8 pb-8 max-w-[1600px] mx-auto w-full items-start">
         
         {/* Left Hand: Controls & Agent Status Graph (5 Columns) */}
         <section className="xl:col-span-5 flex flex-col space-y-6">
@@ -522,7 +522,7 @@ export default function Dashboard() {
           </div>
 
           {/* Connected Graph Topology */}
-          <div className={`border shadow-2xl rounded-xl p-5 flex-1 flex flex-col justify-between transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`} data-testid="graph-visualizer">
+          <div className={`border shadow-2xl rounded-xl p-5 flex flex-col transition-all duration-350 ${isDarkMode ? "bg-slate-900/50 border-slate-800/80" : "bg-white border-slate-200/80 shadow-slate-100/40"}`} data-testid="graph-visualizer">
             <div>
               <h2 className={`text-xs font-bold tracking-widest uppercase flex items-center gap-2 mb-6 font-mono ${isDarkMode ? "text-slate-400" : "text-slate-550"}`}>
                 <Activity className={`h-4 w-4 ${isDarkMode ? "text-emerald-500" : "text-slate-500"}`} /> Graph Visualizer
@@ -643,7 +643,7 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive Knowledge Dashboard Panel */}
-          <div className={`border flex-1 flex flex-col overflow-hidden min-h-[450px] shadow-2xl rounded-xl transition-all duration-350 ${isDarkMode ? "bg-slate-900/30 border-slate-800/80 backdrop-blur-sm" : "bg-white border-slate-200/80"}`}>
+          <div className={`border flex flex-col overflow-hidden min-h-[420px] max-h-[min(640px,70vh)] shadow-2xl rounded-xl transition-all duration-350 ${isDarkMode ? "bg-slate-900/30 border-slate-800/80 backdrop-blur-sm" : "bg-white border-slate-200/80"}`}>
             
             {/* Sliding Tab Header */}
             <div className={`flex p-1 border rounded-lg max-w-sm mt-4 ml-4 select-none ${isDarkMode ? "bg-slate-950 border-slate-800/60" : "bg-slate-50 border-slate-200"}`}>
