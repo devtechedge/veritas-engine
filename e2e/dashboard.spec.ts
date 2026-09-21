@@ -36,6 +36,17 @@ test.describe("Veritas Engine console", () => {
     await expect(page.getByTestId("quality-score")).toContainText("/10");
   });
 
+  test("inquiry sample chip fills the Inquiry Target input", async ({ page }) => {
+    await page.goto("/");
+    const sample = page.getByTestId("inquiry-sample-0");
+    await expect(sample).toBeVisible();
+    await sample.click();
+    await expect(page.getByTestId("inquiry-input")).toHaveValue(
+      "Next.js Edge Execution Performance Limits"
+    );
+    await expect(page.getByTestId("initiate-research")).toBeEnabled();
+  });
+
   test("theme toggle switches the console off the default dark canvas", async ({ page }) => {
     await page.goto("/");
     const shell = page.locator("div.min-h-screen").first();

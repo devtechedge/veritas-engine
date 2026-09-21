@@ -161,6 +161,14 @@ function renderMarkdown(md: string, isDarkMode: boolean): React.ReactNode {
     });
   });
 }
+const INQUIRY_SAMPLES = [
+  "Next.js Edge Execution Performance Limits",
+  "LangGraph vs CrewAI for production multi-agent orchestration",
+  "Trade-offs of serverless GPUs for LLM inference at scale",
+  "Evaluating Gemini 2.5 Flash for agentic research pipelines",
+  "Comparing RAG architectures for enterprise chatbots in 2026",
+] as const;
+
 // CORE DASHBOARD COMPONENT
 export default function Dashboard() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
@@ -386,6 +394,34 @@ export default function Dashboard() {
                     data-testid="inquiry-input"
                     className={`w-full bg-slate-950/80 border border-slate-800/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 rounded-lg px-4 py-3 text-xs outline-none transition duration-200 font-mono ${isDarkMode ? "bg-slate-950/80 border-slate-800/80 text-slate-200 placeholder-slate-650" : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white"}`}
                   />
+                </div>
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {INQUIRY_SAMPLES.map((sample, index) => {
+                    const selected = query === sample;
+                    const truncated =
+                      sample.length > 42 ? `${sample.slice(0, 42)}…` : sample;
+                    return (
+                      <button
+                        key={sample}
+                        type="button"
+                        title={sample}
+                        disabled={loading}
+                        onClick={() => setQuery(sample)}
+                        data-testid={`inquiry-sample-${index}`}
+                        className={`max-w-full truncate px-2 py-1 rounded-md border text-[10px] font-mono transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          selected
+                            ? isDarkMode
+                              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                              : "border-emerald-500/30 bg-emerald-50 text-emerald-700"
+                            : isDarkMode
+                              ? "border-slate-800/80 bg-slate-950/60 text-slate-400 hover:border-emerald-500/30 hover:text-emerald-400"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-emerald-500/30 hover:text-emerald-700 shadow-sm"
+                        }`}
+                      >
+                        {truncated}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
