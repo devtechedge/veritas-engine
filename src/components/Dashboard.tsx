@@ -56,8 +56,8 @@ function renderMarkdown(md: string, isDarkMode: boolean): React.ReactNode {
       const language = lines[0].replace("```", "").trim();
       const code = lines.slice(1, -1).join("\n");
       return (
-        <pre key={i} className={`border p-4 rounded-xl overflow-x-auto text-[11px] font-mono my-4 shadow-inner ${isDarkMode ? "bg-slate-950 border-slate-800/80 text-emerald-400" : "bg-slate-900 border-slate-950 text-emerald-300"}`}>
-          <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2.5 uppercase select-none border-b border-slate-900/60 pb-1.5">
+        <pre key={i} className={`border p-4 rounded-xl overflow-x-auto text-[11px] font-mono my-4 shadow-inner ${isDarkMode ? "bg-slate-950 border-slate-800/80 text-emerald-400" : "bg-slate-50 border-slate-200 text-emerald-700"}`}>
+          <div className={`flex justify-between text-[10px] text-slate-500 font-mono mb-2.5 uppercase select-none border-b pb-1.5 ${isDarkMode ? "border-slate-900/60" : "border-slate-200"}`}>
             <span>{language || "code block"}</span>
             <span>Architecture Snippet</span>
           </div>
@@ -301,10 +301,20 @@ export default function Dashboard() {
     const lowerMsg = msg.toLowerCase();
     if (node === "system") return dark ? "text-slate-500 font-medium" : "text-slate-500 font-medium";
     if (node === "error" || lowerMsg.includes("failed") || lowerMsg.includes("exception")) return dark ? "text-rose-400 font-semibold" : "text-rose-600 font-semibold";
-    if (lowerMsg.startsWith("planner")) return dark ? "text-cyan-400" : "text-cyan-700 font-medium";
-    if (lowerMsg.startsWith("searcher")) return dark ? "text-purple-400" : "text-purple-700 font-medium";
-    if (lowerMsg.startsWith("critic")) return dark ? "text-emerald-400" : "text-emerald-700 font-medium";
-    if (lowerMsg.startsWith("synthesizer")) return dark ? "text-amber-400" : "text-amber-600 font-medium";
+    // Agents: emerald + slate only (no cyan/purple/amber rainbow in light mode)
+    if (
+      lowerMsg.startsWith("planner") ||
+      lowerMsg.startsWith("searcher") ||
+      lowerMsg.startsWith("critic") ||
+      lowerMsg.startsWith("synthesizer") ||
+      node === "planner" ||
+      node === "search" ||
+      node === "searcher" ||
+      node === "critic" ||
+      node === "synthesizer"
+    ) {
+      return dark ? "text-emerald-400 font-medium" : "text-emerald-700 font-medium";
+    }
     return dark ? "text-slate-300" : "text-slate-700";
   };
 
@@ -314,12 +324,18 @@ export default function Dashboard() {
     const isCompleted = executionSteps.includes(nodeId);
 
     if (isActive) {
-      return "border-emerald-500 bg-emerald-950/10 shadow-[0_0_15px_rgba(16,185,129,0.15)] animate-pulse text-white";
+      return isDarkMode
+        ? "border-emerald-500 bg-emerald-950/10 shadow-[0_0_15px_rgba(16,185,129,0.15)] animate-pulse text-white"
+        : "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm animate-pulse";
     }
     if (isCompleted) {
-      return "border-emerald-500/80 bg-slate-900/40 text-emerald-400 animate-fade-in";
+      return isDarkMode
+        ? "border-emerald-500/80 bg-slate-900/40 text-emerald-400 animate-fade-in"
+        : "border-emerald-300 bg-emerald-50/60 text-emerald-700 animate-fade-in";
     }
-    return "border-slate-800/85 bg-slate-950/40 text-slate-500 select-none";
+    return isDarkMode
+      ? "border-slate-800/85 bg-slate-950/40 text-slate-500 select-none"
+      : "border-slate-200 bg-slate-50 text-slate-500 select-none";
   };
 
   // Radial progress ring score metrics
@@ -392,7 +408,7 @@ export default function Dashboard() {
                     onChange={(e) => setQuery(e.target.value)}
                     disabled={loading}
                     data-testid="inquiry-input"
-                    className={`w-full bg-slate-950/80 border border-slate-800/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 rounded-lg px-4 py-3 text-xs outline-none transition duration-200 font-mono ${isDarkMode ? "bg-slate-950/80 border-slate-800/80 text-slate-200 placeholder-slate-650" : "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white"}`}
+                    className={`w-full rounded-lg px-4 py-3 text-xs outline-none transition duration-200 font-mono ${isDarkMode ? "bg-slate-950/80 border border-slate-800/80 text-slate-200 placeholder-slate-650 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40" : "bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30"}`}
                   />
                 </div>
                 <div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -524,9 +540,13 @@ export default function Dashboard() {
                         <div
                           className={`h-8 w-8 rounded-full border flex items-center justify-center text-xs font-mono font-bold shrink-0 transition duration-200 ${
                             isActive
-                              ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                              ? isDarkMode
+                                ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                                : "bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm"
                               : isCompleted
-                              ? "bg-slate-900 border-slate-800 text-slate-400 animate-fade-in"
+                              ? isDarkMode
+                                ? "bg-slate-900 border-slate-800 text-slate-400 animate-fade-in"
+                                : "bg-emerald-50 border-emerald-200 text-emerald-700 animate-fade-in"
                               : isDarkMode ? "bg-slate-950 border-slate-900 text-slate-600" : "bg-slate-50 border-slate-200 text-slate-400"
                           }`}
                         >
@@ -558,8 +578,12 @@ export default function Dashboard() {
                 <span
                   className={`text-xs font-bold px-2 py-0.5 rounded border ${
                     score >= 8
-                      ? "bg-emerald-950/40 text-emerald-400 border-emerald-800/30"
-                      : "bg-amber-950/40 text-amber-400 border-amber-800/30"
+                      ? isDarkMode
+                        ? "bg-emerald-950/40 text-emerald-400 border-emerald-800/30"
+                        : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : isDarkMode
+                        ? "bg-amber-950/40 text-amber-400 border-amber-800/30"
+                        : "bg-amber-50 text-amber-700 border-amber-200"
                   }`}
                 >
                   {score} / 10
@@ -590,15 +614,24 @@ export default function Dashboard() {
                   Systems idle. Enter query and submit to trace routing events.
                 </div>
               ) : (
-                logs.map((log, index) => (
-                  <div key={index} className={`flex items-start space-x-2 leading-relaxed border-b last:border-0 pb-1 last:pb-0 ${isDarkMode ? "border-slate-900/40" : "border-slate-200/40"} ${getLogStyle(log.node, log.message, isDarkMode)}`}>
-                    <span className="text-slate-600 shrink-0 select-none">[{log.timestamp}]</span>
-                    <span className="font-bold uppercase shrink-0 tracking-wide">
+                logs.map((log, index) => {
+                  const logStyle = getLogStyle(log.node, log.message, isDarkMode);
+                  const lowerMsg = log.message.toLowerCase();
+                  const isErrorLog =
+                    log.node === "error" ||
+                    lowerMsg.includes("failed") ||
+                    lowerMsg.includes("exception");
+                  const isSystemLog = log.node === "system";
+                  return (
+                  <div key={index} className={`flex items-start space-x-2 leading-relaxed border-b last:border-0 pb-1 last:pb-0 ${isDarkMode ? "border-slate-900/40" : "border-slate-200/40"}`}>
+                    <span className={`shrink-0 select-none ${isDarkMode ? "text-slate-600" : "text-slate-400"}`}>[{log.timestamp}]</span>
+                    <span className={`font-semibold uppercase shrink-0 tracking-wide ${logStyle}`}>
                       {log.node}:
                     </span>
-                    <span className="break-words">{log.message}</span>
+                    <span className={`break-words ${isErrorLog || isSystemLog ? logStyle : isDarkMode ? "text-slate-300" : "text-slate-700"}`}>{log.message}</span>
                   </div>
-                ))
+                  );
+                })
               )}
               <div ref={terminalEndRef} />
             </div>
@@ -681,7 +714,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="text-slate-500 h-64 flex flex-col items-center justify-center space-y-3 select-none">
-                    <FileText className="h-10 w-10 text-slate-700" />
+                    <FileText className={`h-10 w-10 ${isDarkMode ? "text-slate-700" : "text-slate-300"}`} />
                     <p className="text-xs font-medium">No briefs generated yet. Complete an execution pass to construct output.</p>
                   </div>
                 )
@@ -692,14 +725,14 @@ export default function Dashboard() {
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6">
                     
                     {/* Circle Score progress ring */}
-                    <div className="md:col-span-4 flex flex-col items-center justify-center border border-slate-800/60 bg-slate-950/30 rounded-xl p-4 select-none">
+                    <div className={`md:col-span-4 flex flex-col items-center justify-center border rounded-xl p-4 select-none ${isDarkMode ? "border-slate-800/60 bg-slate-950/30" : "border-slate-200 bg-white"}`}>
                       <div className="relative flex items-center justify-center">
                         <svg className="h-24 w-24 transform -rotate-90">
                           <circle
                             cx="48"
                             cy="48"
                             r={radius}
-                            className="stroke-slate-900 fill-none"
+                            className={`fill-none ${isDarkMode ? "stroke-slate-900" : "stroke-slate-200"}`}
                             strokeWidth="6"
                           />
                           <circle
@@ -713,19 +746,19 @@ export default function Dashboard() {
                             strokeLinecap="round"
                           />
                         </svg>
-                        <span className="absolute font-mono text-lg font-bold text-white" data-testid="quality-score">{score}<span className="text-slate-500 text-xs">/10</span></span>
+                        <span className={`absolute font-mono text-lg font-bold ${isDarkMode ? "text-white" : "text-slate-900"}`} data-testid="quality-score">{score}<span className="text-slate-500 text-xs">/10</span></span>
                       </div>
                       <div className="text-center mt-3 font-mono">
-                        <h4 className="text-2xs font-semibold text-slate-300 uppercase tracking-wider">Quality Audit Score</h4>
-                        <p className="text-3xs text-slate-500 mt-0.5">Automated validation criteria</p>
+                        <h4 className={`text-2xs font-semibold uppercase tracking-wider ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}>Quality Audit Score</h4>
+                        <p className={`text-3xs mt-0.5 ${isDarkMode ? "text-slate-500" : "text-slate-500"}`}>Automated validation criteria</p>
                       </div>
                     </div>
 
                     {/* Commentary Layout */}
                     <div className="md:col-span-8 flex flex-col gap-3">
-                      <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
+                      <div className={`flex items-center gap-2 border-b pb-2 select-none ${isDarkMode ? "border-slate-900/60" : "border-slate-200"}`}>
                         <ShieldAlert className="h-4 w-4 text-emerald-500" />
-                        <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Auditor Notes & Gap Rectifications</span>
+                        <span className={`text-2xs font-mono uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Auditor Notes & Gap Rectifications</span>
                       </div>
                       <div className={`flex-1 text-xs leading-relaxed font-mono max-h-[300px] overflow-y-auto pr-2 custom-scrollbar p-3 rounded-lg border ${isDarkMode ? "text-slate-300 bg-slate-950/20 border-slate-900" : "text-slate-650 bg-slate-50/50 border-slate-200"}`}>
                         {feedback || "Evaluator has not left notes on current payload."}
@@ -735,7 +768,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="text-slate-500 h-64 flex flex-col items-center justify-center space-y-3 select-none">
-                    <ShieldAlert className="h-10 w-10 text-slate-700" />
+                    <ShieldAlert className={`h-10 w-10 ${isDarkMode ? "text-slate-700" : "text-slate-300"}`} />
                     <p className="text-xs font-medium">Audits trigger dynamically during execution phases.</p>
                   </div>
                 )
@@ -744,9 +777,9 @@ export default function Dashboard() {
               {activeTab === "sources" && (
                 document ? (
                   <div className="flex-1 flex flex-col gap-4">
-                    <div className="flex items-center gap-2 border-b border-slate-900/60 pb-2 select-none">
+                    <div className={`flex items-center gap-2 border-b pb-2 select-none ${isDarkMode ? "border-slate-900/60" : "border-slate-200"}`}>
                       <BookOpen className="h-4 w-4 text-emerald-500" />
-                      <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">Fact-checked mapping data index metrics</span>
+                      <span className={`text-2xs font-mono uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Fact-checked mapping data index metrics</span>
                     </div>
                     <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar font-mono">
                       {[
@@ -770,7 +803,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="text-slate-500 h-64 flex flex-col items-center justify-center space-y-3 select-none">
-                    <BookOpen className="h-10 w-10 text-slate-700" />
+                    <BookOpen className={`h-10 w-10 ${isDarkMode ? "text-slate-700" : "text-slate-300"}`} />
                     <p className="text-xs font-medium">Source verification indexing completed post-synthesis.</p>
                   </div>
                 )
