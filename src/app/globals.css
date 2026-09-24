@@ -2,25 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default light body; dark override when html has .dark (toggled by Dashboard). */
 body {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+html.dark body {
   background-color: #020617;
   color: #f8fafc;
 }
 
+/* Theme-aware markdown fallbacks (React renderMarkdown also applies classes).
+   Dark styles scoped under .dark so light mode is never near-black. */
 .markdown-body h1 {
-  @apply text-2xl font-bold text-white mb-4 mt-6 border-b border-slate-800 pb-2;
+  @apply text-2xl font-bold text-slate-900 mb-4 mt-6 border-b border-slate-200 pb-2;
+}
+.dark .markdown-body h1 {
+  @apply text-white border-slate-800;
 }
 
 .markdown-body h2 {
-  @apply text-xl font-semibold text-emerald-400 mb-3 mt-5;
+  @apply text-xl font-semibold text-slate-800 mb-3 mt-5;
+}
+.dark .markdown-body h2 {
+  @apply text-emerald-400;
 }
 
 .markdown-body h3 {
-  @apply text-lg font-medium text-slate-200 mb-2 mt-4;
+  @apply text-lg font-medium text-slate-800 mb-2 mt-4;
+}
+.dark .markdown-body h3 {
+  @apply text-slate-200;
 }
 
 .markdown-body p {
-  @apply mb-4 leading-relaxed text-slate-300;
+  @apply mb-4 leading-relaxed text-slate-600;
+}
+.dark .markdown-body p {
+  @apply text-slate-300;
 }
 
 .markdown-body ul {
@@ -28,19 +48,31 @@ body {
 }
 
 .markdown-body table {
-  @apply w-full text-left border-collapse my-4 bg-slate-950/50 rounded-lg overflow-hidden;
+  @apply w-full text-left border-collapse my-4 bg-white rounded-lg overflow-hidden;
+}
+.dark .markdown-body table {
+  @apply bg-slate-950/50;
 }
 
 .markdown-body th {
-  @apply bg-slate-800 text-slate-200 px-4 py-2 font-semibold text-xs uppercase tracking-wider;
+  @apply bg-slate-100 text-slate-700 px-4 py-2 font-semibold text-xs uppercase tracking-wider;
+}
+.dark .markdown-body th {
+  @apply bg-slate-800 text-slate-200;
 }
 
 .markdown-body td {
-  @apply border-t border-slate-800/80 px-4 py-3 text-xs text-slate-300;
+  @apply border-t border-slate-200 px-4 py-3 text-xs text-slate-600;
+}
+.dark .markdown-body td {
+  @apply border-slate-800/80 text-slate-300;
 }
 
 .markdown-body pre {
-  @apply bg-slate-950 border border-slate-800 p-4 rounded-lg overflow-x-auto text-xs font-mono text-emerald-400 mb-4;
+  @apply bg-slate-100 border border-slate-200 p-4 rounded-lg overflow-x-auto text-xs font-mono text-slate-800 mb-4;
+}
+.dark .markdown-body pre {
+  @apply bg-slate-950 border-slate-800 text-emerald-400;
 }
 
 /* Overlay hover-reveal scrollbars: invisible until the pointer is over that pane. */
