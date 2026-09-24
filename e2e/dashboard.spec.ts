@@ -5,7 +5,9 @@ test.describe("Veritas Engine console", () => {
     await page.goto("/");
     await expect(page.getByTestId("orchestration-panel")).toBeVisible();
     await expect(page.getByTestId("graph-visualizer")).toBeVisible();
-    await expect(page.getByText("VERITAS ENGINE")).toBeVisible();
+    // Exact match: a substring match also picks up the document <title>,
+    // which is not rendered, and strict mode then rejects the locator.
+    await expect(page.getByText("VERITAS ENGINE", { exact: true })).toBeVisible();
     await expect(page.getByTestId("initiate-research")).toBeDisabled();
   });
 
@@ -32,6 +34,17 @@ test.describe("Veritas Engine console", () => {
     await page.getByTestId("tab-critic").click();
     await expect(page.getByTestId("quality-score")).toBeVisible();
     await expect(page.getByTestId("quality-score")).toContainText("/10");
+  });
+
+  test("inquiry sample chip fills the Inquiry Target input", async ({ page }) => {
+    await page.goto("/");
+    const sample = page.getByTestId("inquiry-sample-0");
+    await expect(sample).toBeVisible();
+    await sample.click();
+    await expect(page.getByTestId("inquiry-input")).toHaveValue(
+      "Next.js Edge Execution Performance Limits"
+    );
+    await expect(page.getByTestId("initiate-research")).toBeEnabled();
   });
 
   test("theme toggle switches the console off the default dark canvas", async ({ page }) => {
